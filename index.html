@@ -1,0 +1,2032 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OT Manager · Demo HenkanCX</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+  html, body { height: 100%; overflow: hidden; background: #f5f5f7; }
+  .app { display: flex; height: 100vh; }
+
+  /* ─── SIDEBAR ─── */
+  .sidebar { width: 178px; background: #1a1a2e; display: flex; flex-direction: column; flex-shrink: 0; }
+  .sidebar-logo { padding: 18px 16px 12px; display: flex; align-items: center; gap: 8px; }
+  .logo-icon { width: 30px; height: 30px; background: #833AE0; border-radius: 8px; display: flex; align-items: center; justify-content: center; }
+  .logo-icon span { color: #fff; font-size: 14px; font-weight: 700; }
+  .logo-text { color: #fff; font-size: 13px; font-weight: 600; }
+  .role-badge { margin: 0 12px 14px; background: rgba(131,58,224,0.25); border-radius: 20px; padding: 4px 10px; text-align: center; }
+  .role-badge span { color: #b48ef5; font-size: 10px; font-weight: 500; }
+  .nav-section { padding: 8px 0 4px; }
+  .nav-label { color: #555b7a; font-size: 9px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; padding: 0 16px 7px; }
+  .nav-item { display: flex; align-items: center; gap: 9px; padding: 8px 16px; cursor: pointer; position: relative; transition: background 0.12s; }
+  .nav-item.active::before { content:''; position:absolute; left:0; top:0; bottom:0; width:3px; background:#833AE0; border-radius:0 2px 2px 0; }
+  .nav-item.active { background: rgba(131,58,224,0.2); }
+  .nav-item:hover:not(.active) { background: rgba(255,255,255,0.04); }
+  .nav-item i { color: #888faa; font-size: 16px; }
+  .nav-item.active i { color: #b48ef5; }
+  .nav-item span { color: #888faa; font-size: 12px; }
+  .nav-item.active span { color: #c9b6f8; }
+  .nav-badge { margin-left: auto; background: #833AE0; color: #fff; font-size: 9px; font-weight: 700; border-radius: 10px; padding: 1px 6px; }
+  .nav-badge-ia { margin-left: auto; background: #4b5eaa; color: #fff; font-size: 9px; font-weight: 700; border-radius: 10px; padding: 1px 6px; }
+  .sidebar-footer { padding: 12px 16px; border-top: 0.5px solid rgba(255,255,255,0.06); margin-top: auto; }
+  .sidebar-user { display: flex; align-items: center; gap: 9px; }
+  .user-av { width: 30px; height: 30px; border-radius: 50%; background: #833AE0; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; color: #fff; flex-shrink: 0; }
+  .user-name { color: #c9b6f8; font-size: 11px; font-weight: 600; }
+  .user-role { color: #555b7a; font-size: 10px; margin-top: 1px; }
+
+  /* ─── MAIN ─── */
+  .main { flex: 1; display: flex; flex-direction: column; overflow: hidden; min-width: 0; }
+  .topbar { background: #fff; padding: 13px 22px; border-bottom: 0.5px solid #e5e5e5; display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
+  .topbar h1 { font-size: 16px; font-weight: 600; color: #1a1a2e; flex: 1; }
+  .demo-badge { background: #833AE0; color: #fff; font-size: 10px; font-weight: 600; padding: 4px 12px; border-radius: 5px; white-space: nowrap; }
+  .btn-nueva { background: #833AE0; color: #fff; font-size: 11px; font-weight: 600; border: none; border-radius: 7px; padding: 7px 14px; cursor: pointer; display: flex; align-items: center; gap: 5px; }
+  .btn-excel { background: #fff; color: #555; font-size: 11px; font-weight: 600; border: 0.5px solid #ddd; border-radius: 7px; padding: 7px 12px; cursor: pointer; display: flex; align-items: center; gap: 5px; }
+  .icon-btn { color: #aaa; font-size: 19px; cursor: pointer; }
+  .period-tabs { display: flex; gap: 4px; }
+  .ptab { padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: 500; cursor: pointer; border: 0.5px solid #ddd; background: #fff; color: #666; }
+  .ptab.active { background: #f0e9fd; border-color: #c9a8f5; color: #833AE0; }
+
+  /* ─── SCREENS ─── */
+  .screen { display: none; flex: 1; overflow-y: auto; padding: 18px 22px; flex-direction: column; gap: 14px; }
+  .screen.active { display: flex; }
+
+  /* ─── DASHBOARD STYLES ─── */
+  .kpi-row-4 { display: grid; grid-template-columns: repeat(4,1fr); gap: 12px; }
+  .kpi-card { background: #fff; border-radius: 10px; border: 0.5px solid #e8e8e8; padding: 16px 18px; }
+  .kpi-icon { width: 34px; height: 34px; border-radius: 9px; display: flex; align-items: center; justify-content: center; margin-bottom: 10px; }
+  .kpi-icon.purple{background:#f0e9fd;} .kpi-icon.purple i{color:#833AE0;}
+  .kpi-icon.blue{background:#e8f0fe;} .kpi-icon.blue i{color:#2563eb;}
+  .kpi-icon.green{background:#e6f9f0;} .kpi-icon.green i{color:#16a34a;}
+  .kpi-icon.amber{background:#fff4e0;} .kpi-icon.amber i{color:#c27b00;}
+  .kpi-icon i { font-size: 17px; }
+  .kpi-value { font-size: 28px; font-weight: 700; color: #1a1a2e; line-height: 1; }
+  .kpi-label { font-size: 11px; color: #888; margin-top: 5px; }
+  .kpi-trend { font-size: 10px; margin-top: 7px; display: flex; align-items: center; gap: 3px; font-weight: 500; }
+  .trend-up-good{color:#16a34a;} .trend-down-good{color:#16a34a;} .trend-neutral{color:#c27b00;} .trend-up-bad{color:#c0392b;}
+  .kpi-card-g { background: #fff; border-radius: 10px; border: 0.5px solid #e8e8e8; padding: 14px 18px; }
+  .kpi-card-g.kalert{border-color:#f5a0a0;background:#fff8f8;} .kpi-card-g.kwarn{border-color:#fbd38d;background:#fffbf2;}
+  .kg-label { font-size: 9px; font-weight: 700; color: #aaa; text-transform: uppercase; letter-spacing:.06em; margin-bottom: 6px; }
+  .kg-value { font-size: 22px; font-weight: 700; color: #1a1a2e; }
+  .kg-value.warn{color:#c27b00;} .kg-value.danger{color:#c0392b;} .kg-value.ok{color:#16a34a;}
+  .kg-sub { font-size: 10px; color: #aaa; margin-top: 4px; }
+  .kg-sub.warn{color:#c27b00;} .kg-sub.danger{color:#c0392b;}
+  .kg-bar { height: 3px; background: #f0f0f0; border-radius: 2px; margin-top: 8px; }
+  .kg-fill { height: 100%; border-radius: 2px; }
+  .bottom-row { display: grid; grid-template-columns: 1.5fr 1fr; gap: 14px; }
+  .panel { background: #fff; border-radius: 10px; border: 0.5px solid #e8e8e8; padding: 14px 16px; }
+  .panel-hdr { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+  .panel-title { font-size: 11px; font-weight: 700; color: #1a1a2e; display: flex; align-items: center; gap: 6px; }
+  .panel-title i { color: #833AE0; font-size: 14px; }
+  .panel-sub { font-size: 10px; color: #bbb; }
+  .bar-chart { display: flex; align-items: flex-end; gap: 6px; height: 80px; }
+  .bar-col { display: flex; flex-direction: column; align-items: center; gap: 3px; flex: 1; }
+  .bar { border-radius: 4px 4px 0 0; width: 100%; }
+  .bv { font-size: 9px; font-weight: 600; color: #555; }
+  .bl { font-size: 9px; color: #bbb; }
+  .chart-footer { display: flex; gap: 20px; margin-top: 10px; padding-top: 10px; border-top: 0.5px solid #f5f5f5; }
+  .cf-lbl { font-size: 9px; color: #aaa; font-weight: 600; text-transform: uppercase; letter-spacing:.05em; }
+  .cf-val { font-size: 14px; font-weight: 700; color: #1a1a2e; margin-top: 2px; }
+  .tec-col-hdr { display: grid; grid-template-columns: 1fr 120px 100px; padding: 0 0 6px; border-bottom: 0.5px solid #f0f0f0; margin-bottom: 4px; gap: 8px; }
+  .tec-col-hdr span { font-size: 9px; font-weight: 700; color: #c0c0c0; text-transform: uppercase; letter-spacing:.05em; }
+  .tec-item { display: grid; grid-template-columns: 1fr 120px 100px; align-items: center; padding: 9px 0; border-bottom: 0.5px solid #f5f5f5; gap: 8px; }
+  .tec-item:last-child { border-bottom: none; }
+  .tec-identity { display: flex; align-items: center; gap: 9px; }
+  .tec-av { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 700; color: #fff; flex-shrink: 0; }
+  .av-cr{background:#833AE0;} .av-al{background:#2563eb;} .av-lm{background:#16a34a;} .av-mc{background:#d97706;} .av-dp{background:#0891b2;}
+  .tec-name { font-size: 11px; font-weight: 600; color: #1a1a2e; }
+  .tec-loc { font-size: 10px; color: #aaa; margin-top: 1px; }
+  .origen-tag { display: inline-flex; align-items: center; gap: 4px; font-size: 10px; font-weight: 600; padding: 3px 8px; border-radius: 5px; white-space: nowrap; }
+  .origen-interno{background:#f0e9fd;color:#833AE0;} .origen-taller{background:#e8f0fe;color:#2563eb;}
+  .origen-sub { font-size: 9px; font-weight: 400; color: #aaa; margin-top: 2px; display: block; }
+  .tec-status { font-size: 10px; font-weight: 600; padding: 2px 9px; border-radius: 10px; white-space: nowrap; }
+  .ts-prog{background:#fff4e0;color:#c27b00;} .ts-disp{background:#e6f9f0;color:#16a34a;}
+
+  /* ─── ÓRDENES STYLES ─── */
+  .alertas-strip { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; }
+  .alerta-card { border-radius: 9px; padding: 10px 14px; display: flex; align-items: flex-start; gap: 9px; border: 0.5px solid transparent; }
+  .alerta-card.ared{background:#fff5f5;border-color:#f5a0a0;} .alerta-card.ared i{color:#c0392b;}
+  .alerta-card.aamber{background:#fffbf0;border-color:#fbd38d;} .alerta-card.aamber i{color:#c27b00;}
+  .alerta-card.apurple{background:#f5f0fd;border-color:#c9b6f8;} .alerta-card.apurple i{color:#833AE0;}
+  .alerta-card i { font-size: 15px; margin-top: 1px; flex-shrink: 0; }
+  .alerta-titulo { font-size: 11px; font-weight: 600; color: #1a1a2e; }
+  .alerta-sub { font-size: 10px; color: #888; margin-top: 2px; }
+  .alerta-time { font-size: 9px; color: #bbb; margin-top: 4px; }
+  .filter-cards { display: grid; grid-template-columns: 1.1fr repeat(5,1fr); gap: 10px; }
+  .fcard { background: #fff; border-radius: 10px; border: 2px solid transparent; padding: 12px 14px; cursor: pointer; transition: all 0.15s; position: relative; user-select: none; }
+  .fcard:hover { transform: translateY(-1px); }
+  .fcard-total{background:#1a1a2e;border-color:#1a1a2e;}
+  .fcard-todas{border-color:#1a1a2e;} .fcard-todas.selected{background:#f0f0f8;}
+  .fcard-prog{border-color:#c27b00;} .fcard-prog.selected{background:#fffbf0;}
+  .fcard-pend{border-color:#c0392b;} .fcard-pend.selected{background:#fff5f5;}
+  .fcard-comp{border-color:#16a34a;} .fcard-comp.selected{background:#f0fdf4;}
+  .fcard-bloq{border-color:#833AE0;} .fcard-bloq.selected{background:#f5f0fd;}
+  .fcard-num { font-size: 24px; font-weight: 700; line-height: 1; margin-bottom: 4px; }
+  .fcard-total .fcard-num{color:#fff;} .fcard-todas .fcard-num{color:#1a1a2e;} .fcard-prog .fcard-num{color:#c27b00;} .fcard-pend .fcard-num{color:#c0392b;} .fcard-comp .fcard-num{color:#16a34a;} .fcard-bloq .fcard-num{color:#833AE0;}
+  .fcard-label { font-size: 11px; font-weight: 500; }
+  .fcard-total .fcard-label{color:rgba(255,255,255,.65);} .fcard-todas .fcard-label{color:#888;} .fcard-prog .fcard-label{color:#c27b00;} .fcard-pend .fcard-label{color:#c0392b;} .fcard-comp .fcard-label{color:#16a34a;} .fcard-bloq .fcard-label{color:#833AE0;}
+  .fcard-icon { position: absolute; top: 10px; right: 10px; font-size: 14px; }
+  .fcard-total .fcard-icon{color:rgba(255,255,255,.2);} .fcard-todas .fcard-icon{color:#ddd;} .fcard-prog .fcard-icon{color:#fbd38d;} .fcard-pend .fcard-icon{color:#f5a0a0;} .fcard-comp .fcard-icon{color:#6ee7b7;} .fcard-bloq .fcard-icon{color:#c9b6f8;}
+  .filter-hint { font-size: 10px; color: #bbb; display: flex; align-items: center; gap: 5px; }
+  .search-bar { display: flex; gap: 8px; }
+  .search-input { flex: 1; background: #fff; border: 0.5px solid #ddd; border-radius: 8px; padding: 8px 13px; font-size: 12px; color: #bbb; display: flex; align-items: center; gap: 7px; }
+  .vtab { width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; border-radius: 6px; border: 0.5px solid #ddd; background: #fff; cursor: pointer; color: #aaa; font-size: 14px; }
+  .vtab.active{background:#f0e9fd;border-color:#c9a8f5;color:#833AE0;}
+  .tcols { grid-template-columns: 70px 1fr 110px 100px 65px 105px 118px 138px 138px 26px; }
+  .ot-table { background: #fff; border-radius: 10px; border: 0.5px solid #e5e5e5; overflow: hidden; }
+  .ot-table-header { display: grid; padding: 9px 18px; border-bottom: 0.5px solid #eee; background: #fafafa; gap: 10px; align-items: center; }
+  .ot-table-header span { font-size: 9px; font-weight: 700; color: #c0c0c0; text-transform: uppercase; letter-spacing:.06em; }
+  .ot-row { display: grid; padding: 12px 18px; border-bottom: 0.5px solid #f5f5f5; align-items: center; cursor: pointer; transition: background 0.12s; gap: 10px; }
+  .ot-row:hover{background:#fafafa;} .ot-row:last-child{border-bottom:none;} .ot-row.hidden{display:none;}
+  .ot-id{color:#833AE0;font-size:12px;font-weight:700;}
+  .ot-title{font-size:12px;font-weight:500;color:#1a1a2e;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .ot-sub{font-size:10px;color:#c0c0c0;margin-top:2px;}
+  .cell{font-size:11px;color:#555;}
+  .tipo-badge{display:inline-block;font-size:10px;font-weight:600;padding:2px 8px;border-radius:4px;}
+  .tipo-rep{color:#c0392b;background:#fef0ee;} .tipo-mant{color:#2563eb;background:#eff3fe;} .tipo-inst{color:#16a34a;background:#ecfdf5;}
+  .prio{font-size:11px;font-weight:600;}
+  .prio-alta{color:#c0392b;} .prio-media{color:#c27b00;} .prio-baja{color:#16a34a;}
+  .estado-badge{display:inline-block;font-size:10px;font-weight:600;padding:3px 9px;border-radius:10px;white-space:nowrap;}
+  .e-prog{background:#fff4e0;color:#c27b00;} .e-pend{background:#ffe5e5;color:#c0392b;} .e-comp{background:#e6f9f0;color:#1a8753;} .e-bloq{background:#fff0f0;color:#c0392b;border:1px dashed #f5a0a0;}
+  .ta{display:inline-block;font-size:10px;font-weight:600;padding:2px 8px;border-radius:4px;}
+  .ta-int{background:#f0e9fd;color:#833AE0;} .ta-tal{background:#e8f0fe;color:#2563eb;}
+  .taller-cell{display:flex;align-items:center;gap:6px;font-size:11px;}
+  .taller-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+  .taller-name-cell{color:#2563eb;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .taller-int{color:#c0c0c0;font-style:italic;font-size:11px;}
+  .tec-cell-ord{display:flex;align-items:center;gap:7px;}
+  .tec-av-sm{width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:700;color:#fff;flex-shrink:0;}
+  .tec-n{font-size:11px;color:#333;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .chev{color:#ddd;font-size:13px;}
+
+  /* ─── ANALYTICS STYLES ─── */
+  .sub-tabs { display: flex; border-bottom: 0.5px solid #e5e5e5; background: #fff; flex-shrink: 0; }
+  .stab { padding: 9px 16px; font-size: 12px; font-weight: 500; color: #aaa; cursor: pointer; border-bottom: 2px solid transparent; display: flex; align-items: center; gap: 5px; white-space: nowrap; }
+  .stab.active{color:#833AE0;border-bottom-color:#833AE0;font-weight:600;}
+  .stab i{font-size:13px;}
+  .tab-content{display:none;flex-direction:column;gap:14px;width:100%;}
+  .tab-content.active{display:flex;}
+  #screen-analytics{gap:0 !important;}
+  .kpi-strip{display:grid;gap:10px;}
+  .kpi-strip.c4{grid-template-columns:repeat(4,1fr);} .kpi-strip.c5{grid-template-columns:repeat(5,1fr);}
+  .kcard{background:#fff;border-radius:9px;border:0.5px solid #e8e8e8;padding:11px 14px;}
+  .kcard-label{font-size:9px;font-weight:700;color:#aaa;text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px;}
+  .kcard-val{font-size:20px;font-weight:700;color:#1a1a2e;}
+  .kcard-val.ok{color:#16a34a;} .kcard-val.warn{color:#c27b00;} .kcard-val.danger{color:#c0392b;}
+  .kcard-sub{font-size:10px;color:#aaa;margin-top:3px;}
+  .kcard-sub.ok{color:#16a34a;} .kcard-sub.warn{color:#c27b00;} .kcard-sub.danger{color:#c0392b;}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+  .panel-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+  .section-header{display:flex;align-items:center;gap:8px;margin-bottom:10px;}
+  .section-title{font-size:12px;font-weight:700;color:#1a1a2e;white-space:nowrap;}
+  .section-badge{font-size:10px;font-weight:600;padding:2px 9px;border-radius:10px;white-space:nowrap;}
+  .sb-interno{background:#f0e9fd;color:#833AE0;} .sb-externo{background:#e8f0fe;color:#2563eb;}
+  .section-line{flex:1;height:0.5px;background:#eee;}
+  .v{font-size:12px;font-weight:700;}
+  .v.ok{color:#16a34a;} .v.warn{color:#c27b00;} .v.danger{color:#c0392b;} .v.neutral{color:#888;}
+  .mini-bar{height:3px;border-radius:2px;margin-top:3px;}
+  .score-pill{font-size:10px;font-weight:700;padding:2px 9px;border-radius:10px;display:inline-block;}
+  .score-a{background:#e6f9f0;color:#16a34a;} .score-b{background:#fff4e0;color:#c27b00;} .score-c{background:#fff0f0;color:#c0392b;}
+  .av{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:#fff;flex-shrink:0;}
+  .av-cr-a{background:#833AE0;} .av-al-a{background:#2563eb;} .av-lm-a{background:#16a34a;} .av-mc-a{background:#d97706;} .av-dp-a{background:#0891b2;}
+  .bar-chart-a{display:flex;align-items:flex-end;gap:6px;height:90px;padding-top:8px;}
+  .chart-footer-a{display:flex;gap:16px;margin-top:10px;padding-top:10px;border-top:0.5px solid #f5f5f5;}
+  .bloqueo-row{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
+  .bloqueo-row:last-child{margin-bottom:0;}
+  .bl-icon{width:26px;height:26px;border-radius:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .bl-icon i{font-size:13px;}
+  .bl-icon.red{background:#fff0f0;} .bl-icon.red i{color:#c0392b;}
+  .bl-icon.amber{background:#fff4e0;} .bl-icon.amber i{color:#c27b00;}
+  .bl-icon.blue{background:#e8f0fe;} .bl-icon.blue i{color:#2563eb;}
+  .bl-icon.gray{background:#f5f5f5;} .bl-icon.gray i{color:#888;}
+  .bl-label{flex:1;font-size:11px;color:#555;}
+  .bl-bar-wrap{width:70px;height:5px;background:#f0f0f0;border-radius:3px;overflow:hidden;flex-shrink:0;}
+  .bl-bar-fill{height:100%;border-radius:3px;}
+  .bl-days{font-size:11px;font-weight:700;width:32px;text-align:right;flex-shrink:0;}
+  .aging-row{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
+  .aging-row:last-child{margin-bottom:0;}
+  .aging-label{font-size:11px;color:#555;width:145px;flex-shrink:0;}
+  .aging-bar-wrap{flex:1;height:7px;background:#f0f0f0;border-radius:3px;overflow:hidden;}
+  .aging-bar-fill{height:100%;border-radius:3px;}
+  .aging-val{font-size:10px;font-weight:700;width:40px;text-align:right;flex-shrink:0;}
+  .aging-val.ok{color:#16a34a;} .aging-val.warn{color:#c27b00;} .aging-val.danger{color:#c0392b;} .aging-val.neutral{color:#888;}
+  .sla-row{display:flex;align-items:center;gap:8px;margin-bottom:7px;}
+  .sla-row:last-child{margin-bottom:0;}
+  .sla-month{font-size:11px;color:#555;width:30px;flex-shrink:0;}
+  .sla-bar-wrap{flex:1;height:10px;background:#f0f0f0;border-radius:5px;overflow:hidden;position:relative;}
+  .sla-bar-fill{height:100%;border-radius:5px;}
+  .sla-meta-line{position:absolute;top:0;bottom:0;width:1.5px;background:#1a1a2e;opacity:.2;}
+  .sla-pct{font-size:10px;font-weight:700;width:32px;text-align:right;flex-shrink:0;}
+  .sla-pct.ok{color:#16a34a;} .sla-pct.warn{color:#c27b00;} .sla-pct.danger{color:#c0392b;}
+  .sla-item{display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:0.5px solid #f5f5f5;}
+  .sla-item:last-child{border-bottom:none;}
+  .sla-id{color:#833AE0;font-size:11px;font-weight:700;width:54px;flex-shrink:0;}
+  .sla-info{flex:1;}
+  .sla-desc{font-size:11px;font-weight:500;color:#1a1a2e;}
+  .sla-client{font-size:10px;color:#aaa;}
+  .sla-badge{font-size:9px;font-weight:700;padding:2px 7px;border-radius:8px;white-space:nowrap;}
+  .sla-crit{background:#fff0f0;color:#c0392b;} .sla-alert{background:#fff4e0;color:#c27b00;}
+  /* ── TÉCNICOS INTERNOS — tabla espaciosa ── */
+  .tec-table{background:#fff;border-radius:10px;border:0.5px solid #e8e8e8;overflow:hidden;}
+  .tec-th{display:grid;grid-template-columns:2fr 80px 130px 80px 90px 90px 70px;padding:10px 20px;background:#fafafa;border-bottom:0.5px solid #efefef;gap:10px;}
+  .tec-th span{font-size:9px;font-weight:700;color:#c0c0c0;text-transform:uppercase;letter-spacing:.07em;}
+  .tec-row{display:grid;grid-template-columns:2fr 80px 130px 80px 90px 90px 70px;padding:14px 20px;border-bottom:0.5px solid #f5f5f5;align-items:center;gap:10px;}
+  .tec-row:last-child{border-bottom:none;}
+  .tec-id{display:flex;align-items:center;gap:10px;}
+  .tec-name-a{font-size:12px;font-weight:600;color:#1a1a2e;}
+  .tec-zone{font-size:10px;color:#bbb;margin-top:2px;}
+  /* FCR con barra inline */
+  .fcr-cell{display:flex;flex-direction:column;gap:3px;}
+  .fcr-val{font-size:12px;font-weight:700;}
+  .fcr-bar{height:4px;border-radius:2px;background:#f0f0f0;overflow:hidden;}
+  .fcr-fill{height:100%;border-radius:2px;}
+
+  /* ── TALLERES — tabla tipo scorecard espacioso ── */
+  .taller-section-wrap{background:#fff;border-radius:10px;border:0.5px solid #e8e8e8;overflow:hidden;}
+  .taller-col-header{display:grid;grid-template-columns:2fr 90px 110px 110px 120px 110px 40px;padding:10px 20px;background:#fafafa;border-bottom:0.5px solid #efefef;gap:10px;}
+  .taller-col-header span{font-size:9px;font-weight:700;color:#c0c0c0;text-transform:uppercase;letter-spacing:.07em;}
+  .taller-card-a{background:#fff;border-top:0.5px solid #f5f5f5;overflow:hidden;}
+  .taller-card-a:first-child{border-top:none;}
+  .taller-card-a.alert-border{background:#fffafa;}
+  .taller-header{display:grid;grid-template-columns:2fr 90px 110px 110px 120px 110px 40px;padding:16px 20px;align-items:center;gap:10px;cursor:pointer;}
+  .taller-header:hover{background:#fafafa;}
+  .taller-icon{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;}
+  .taller-icon.green{background:#e6f9f0;color:#16a34a;} .taller-icon.blue{background:#e8f0fe;color:#2563eb;} .taller-icon.warn{background:#fff4e0;color:#c27b00;}
+  .taller-id-cell{display:flex;align-items:center;gap:10px;}
+  .taller-name-a{font-size:12px;font-weight:600;color:#1a1a2e;}
+  .taller-sub-txt{font-size:10px;color:#bbb;margin-top:2px;}
+  /* KPI inline dentro de taller — sin etiqueta, solo valor */
+  .tkpi-val{font-size:13px;font-weight:700;}
+  .tkpi-lbl{font-size:9px;color:#bbb;margin-top:1px;}
+  /* SLA con barra horizontal visible */
+  .sla-bar-cell{display:flex;flex-direction:column;gap:4px;}
+  .sla-bar-outer{height:5px;background:#f0f0f0;border-radius:3px;overflow:hidden;width:100%;}
+  .sla-bar-inner{height:100%;border-radius:3px;}
+  .sla-bar-label{font-size:11px;font-weight:700;}
+  /* Rating con estrellas */
+  .rating-cell{display:flex;align-items:center;gap:5px;}
+  .stars{color:#f59e0b;font-size:11px;letter-spacing:1px;}
+  .rating-num{font-size:12px;font-weight:700;color:#1a1a2e;}
+  .sla-chip{display:inline-flex;align-items:center;gap:3px;font-size:10px;font-weight:700;padding:2px 7px;border-radius:8px;}
+  .chip-ok{background:#e6f9f0;color:#16a34a;} .chip-warn{background:#fff4e0;color:#c27b00;} .chip-danger{background:#fff0f0;color:#c0392b;}
+  .chevron{color:#ccc;font-size:14px;transition:transform 0.2s;}
+  .chevron.open{transform:rotate(180deg);}
+  .sub-tecs{display:none;padding:4px 14px 10px;background:#fafcff;border-top:0.5px solid #f0f0f0;}
+  .sub-tecs.open{display:block;}
+  .sub-th{display:grid;grid-template-columns:150px 65px 65px 65px 65px 50px;padding:6px 0 5px;gap:6px;border-bottom:0.5px solid #eee;}
+  .sub-th span{font-size:9px;font-weight:700;color:#bbb;text-transform:uppercase;letter-spacing:.05em;}
+  .sub-row{display:grid;grid-template-columns:150px 65px 65px 65px 65px 50px;padding:6px 0;gap:6px;align-items:center;border-bottom:0.5px solid #f5f5f5;}
+  .sub-row:last-child{border-bottom:none;}
+  .sub-id{display:flex;align-items:center;gap:6px;}
+  .sub-av{width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:700;color:#fff;}
+  .sub-name{font-size:10px;color:#444;font-weight:500;}
+  .reinc-item{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:0.5px solid #f5f5f5;}
+  .reinc-item:last-child{border-bottom:none;}
+  .reinc-num{width:22px;height:22px;border-radius:50%;background:#f0e9fd;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#833AE0;flex-shrink:0;}
+  .reinc-eq-icon{width:28px;height:28px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;}
+  .reinc-info{flex:1;}
+  .reinc-model{font-size:11px;font-weight:600;color:#1a1a2e;}
+  .reinc-falla{font-size:10px;color:#aaa;}
+  .reinc-client{font-size:10px;color:#bbb;}
+  .reinc-count{font-size:14px;font-weight:700;}
+  .reinc-count.danger{color:#c0392b;} .reinc-count.warn{color:#c27b00;}
+  .reinc-dias{font-size:9px;color:#bbb;}
+  .risk-banner{background:#fff5f5;border:0.5px solid #f5a0a0;border-radius:8px;padding:9px 12px;display:flex;align-items:flex-start;gap:8px;font-size:11px;color:#c0392b;}
+  .risk-banner i{font-size:14px;margin-top:1px;flex-shrink:0;}
+  .cat-row{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
+  .cat-row:last-child{margin-bottom:0;}
+  .cat-label{display:flex;align-items:center;gap:6px;width:145px;flex-shrink:0;font-size:11px;color:#555;}
+  .cat-label i{font-size:13px;}
+  .nps-score{font-size:42px;font-weight:700;color:#833AE0;line-height:1;}
+  .nps-sub{font-size:11px;color:#aaa;margin-top:4px;}
+  .nps-strip{display:flex;border-radius:6px;overflow:hidden;height:22px;}
+  .nps-seg{display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;}
+  .nps-labels{display:flex;justify-content:space-between;margin-top:4px;}
+  .nps-lbl{font-size:9px;color:#aaa;}
+  .nps-tec-row{display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:0.5px solid #f5f5f5;}
+  .nps-tec-row:last-child{border-bottom:none;}
+  .comment-item{padding:9px 0;border-bottom:0.5px solid #f5f5f5;}
+  .comment-item:last-child{border-bottom:none;}
+  .comment-header{display:flex;align-items:center;gap:8px;margin-bottom:4px;}
+  .comment-name{font-size:11px;font-weight:600;color:#1a1a2e;}
+  .comment-date{font-size:10px;color:#bbb;margin-left:auto;}
+  .comment-text{font-size:11px;color:#666;line-height:1.5;}
+  .comment-tag{display:inline-block;font-size:9px;font-weight:600;padding:1px 7px;border-radius:8px;margin-top:4px;}
+  .tag-pos{background:#e6f9f0;color:#16a34a;} .tag-neg{background:#fff0f0;color:#c0392b;}
+
+  /* ── AGENDA ── */
+  .agenda-layout { display: flex; gap: 0; flex: 1; min-height: 0; }
+
+  /* Panel izquierdo: lista de recursos */
+  .agenda-sidebar { width: 210px; flex-shrink: 0; border-right: 0.5px solid #eee; overflow-y: auto; background: #fff; }
+  .agenda-sidebar-hdr { padding: 10px 14px; font-size: 9px; font-weight: 700; color: #aaa; text-transform: uppercase; letter-spacing: .08em; border-bottom: 0.5px solid #f0f0f0; background: #fafafa; display: flex; align-items: center; justify-content: space-between; }
+  .agenda-resource { display: flex; align-items: center; gap: 9px; padding: 9px 14px; border-bottom: 0.5px solid #f5f5f5; cursor: pointer; transition: background .12s; }
+  .agenda-resource:hover { background: #faf7ff; }
+  .agenda-resource.selected { background: #f5f0fd; }
+  .res-av { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 9px; font-weight: 700; color: #fff; flex-shrink: 0; }
+  .res-name { font-size: 11px; font-weight: 600; color: #1a1a2e; }
+  .res-sub { font-size: 9px; color: #bbb; margin-top: 1px; }
+  .res-badge { margin-left: auto; font-size: 9px; font-weight: 700; padding: 1px 6px; border-radius: 8px; white-space: nowrap; }
+  .rb-disp { background: #e6f9f0; color: #16a34a; }
+  .rb-ocup { background: #fff4e0; color: #c27b00; }
+  .rb-full { background: #fff0f0; color: #c0392b; }
+  .agenda-group-label { padding: 8px 14px 4px; font-size: 9px; font-weight: 700; color: #833AE0; text-transform: uppercase; letter-spacing: .08em; background: #faf7ff; border-bottom: 0.5px solid #f0e9fd; display: flex; align-items: center; gap: 6px; }
+
+  /* Grid del calendario */
+  .agenda-grid-wrap { flex: 1; overflow: auto; position: relative; }
+  .agenda-grid { display: grid; grid-template-columns: repeat(7, minmax(130px, 1fr)); min-width: 910px; }
+  .agenda-day-hdr { padding: 8px 10px; background: #fafafa; border-bottom: 0.5px solid #eee; border-right: 0.5px solid #eee; position: sticky; top: 0; z-index: 5; }
+  .agenda-day-hdr.today { background: #f5f0fd; }
+  .agenda-day-name { font-size: 10px; font-weight: 700; color: #aaa; text-transform: uppercase; letter-spacing: .05em; }
+  .agenda-day-num { font-size: 18px; font-weight: 700; color: #1a1a2e; margin-top: 1px; }
+  .agenda-day-hdr.today .agenda-day-num { color: #833AE0; }
+  .agenda-day-hdr.today .agenda-day-name { color: #833AE0; }
+  .agenda-cell { border-right: 0.5px solid #eee; border-bottom: 0.5px solid #f5f5f5; padding: 6px 6px 8px; min-height: 110px; vertical-align: top; background: #fff; }
+  .agenda-cell.today { background: #fdfbff; }
+  .agenda-cell.weekend { background: #fafafa; }
+
+  /* Tarjetas de OT en la agenda */
+  .agenda-ot { border-radius: 7px; padding: 6px 8px; margin-bottom: 5px; cursor: pointer; transition: opacity .15s; border-left: 3px solid transparent; }
+  .agenda-ot:hover { opacity: .85; }
+  .aot-rep { background: #fff0ee; border-left-color: #c0392b; }
+  .aot-mant { background: #eff3fe; border-left-color: #2563eb; }
+  .aot-inst { background: #ecfdf5; border-left-color: #16a34a; }
+  .aot-bloq { background: #fff5f5; border-left-color: #c0392b; border-style: dashed; }
+  .aot-id { font-size: 9px; font-weight: 700; color: #888; }
+  .aot-title { font-size: 10px; font-weight: 600; color: #1a1a2e; margin-top: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .aot-time { font-size: 9px; color: #aaa; margin-top: 2px; display: flex; align-items: center; gap: 3px; }
+  .aot-tec { display: flex; align-items: center; gap: 4px; margin-top: 4px; }
+  .aot-av { width: 14px; height: 14px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 6px; font-weight: 700; color: #fff; }
+  .aot-tec-name { font-size: 9px; color: #666; }
+  .agenda-empty { font-size: 10px; color: #ddd; text-align: center; padding-top: 20px; }
+
+  /* Leyenda */
+  .agenda-legend { display: flex; gap: 14px; padding: 8px 16px; background: #fff; border-top: 0.5px solid #eee; flex-shrink: 0; flex-wrap: wrap; }
+  .leg-item { display: flex; align-items: center; gap: 5px; font-size: 10px; color: #888; }
+  .leg-dot { width: 10px; height: 10px; border-radius: 2px; flex-shrink: 0; }
+
+  /* ── PANEL DETALLE OT ── */
+  .det-field{background:#f9f9fb;border-radius:9px;padding:10px 13px;}
+  .det-label{font-size:10px;color:#833AE0;font-weight:500;margin-bottom:3px;}
+  .det-val{font-size:12px;font-weight:500;color:#1a1a2e;}
+
+  /* timeline */
+  .tl-item{display:flex;align-items:flex-start;gap:10px;padding-bottom:14px;position:relative;}
+  .tl-dot{width:15px;height:15px;border-radius:50%;flex-shrink:0;margin-top:1px;position:relative;z-index:1;}
+  .tl-dot-done{background:#833AE0;border:2px solid #833AE0;}
+  .tl-dot-blocked{background:#c0392b;border:2px solid #c0392b;}
+  .tl-dot-pending{background:#fff;border:2px solid #ddd;}
+  .tl-content{flex:1;padding-top:0;}
+  .tl-label{font-size:12px;font-weight:600;color:#1a1a2e;}
+  .tl-time{font-size:10px;color:#aaa;margin-top:2px;}
+
+  /* checklist */
+  .chk-item{display:flex;align-items:center;gap:10px;padding:10px 13px;border-radius:9px;border:0.5px solid #f0f0f0;background:#fff;cursor:pointer;transition:background 0.12s;font-size:12px;color:#333;}
+  .chk-item:hover{background:#fafafa;}
+  .chk-item.chk-done{background:#f9f7ff;border-color:#e4d8fc;}
+  .chk-item.chk-done span{color:#bbb;text-decoration:line-through;}
+  .chk-box{width:18px;height:18px;border-radius:5px;border:1.5px solid #ddd;flex-shrink:0;display:flex;align-items:center;justify-content:center;}
+  .chk-box-done{background:#833AE0;border-color:#833AE0;}
+
+  /* media slots */
+  .media-slot{border:1.5px dashed #ddd;border-radius:10px;padding:18px 10px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;cursor:pointer;transition:border-color 0.15s;background:#fafafa;}
+  .media-slot:hover{border-color:#833AE0;background:#faf7ff;}
+  .media-label{font-size:10px;color:#aaa;font-weight:500;}
+  .media-video{border-color:#e4d8fc;background:#faf7ff;}
+  .media-video:hover{border-color:#833AE0;}
+
+  /* firma slots */
+  .firma-slot{border:1.5px dashed #ddd;border-radius:10px;padding:20px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;cursor:pointer;background:#fafafa;}
+  .firma-slot:hover{border-color:#833AE0;background:#faf7ff;}
+
+  /* modal bloqueo opts */
+  .bloqueo-opt{display:flex;align-items:center;gap:10px;padding:9px 13px;border-radius:9px;border:0.5px solid #eee;cursor:pointer;font-size:12px;color:#333;transition:background 0.1s;}
+  .bloqueo-opt:hover{background:#faf7ff;border-color:#c9a8f5;}
+  .bloqueo-opt input{accent-color:#833AE0;}
+
+  /* ── ASISTENTE IA ── */
+  #screen-ia{padding:0;gap:0;flex-direction:row;}
+  .ia-suggestions{width:210px;flex-shrink:0;border-right:0.5px solid #eee;padding:20px 14px;display:flex;flex-direction:column;gap:10px;overflow-y:auto;background:#fff;}
+  .ia-sug-label{font-size:9px;font-weight:700;color:#aaa;text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px;}
+  .ia-sug-card{border:0.5px solid #eee;border-radius:10px;padding:12px 13px;cursor:pointer;transition:border-color .15s,background .15s;}
+  .ia-sug-card:hover{border-color:#833AE0;background:#faf7ff;}
+  .ia-sug-icon{width:28px;height:28px;border-radius:8px;background:#f0e9fd;display:flex;align-items:center;justify-content:center;margin-bottom:8px;}
+  .ia-sug-icon i{color:#833AE0;font-size:14px;}
+  .ia-sug-title{font-size:12px;font-weight:600;color:#1a1a2e;}
+  .ia-sug-sub{font-size:10px;color:#aaa;margin-top:2px;}
+  .ia-chat{flex:1;display:flex;flex-direction:column;min-width:0;}
+  .ia-chat-header{padding:14px 20px;border-bottom:0.5px solid #f0f0f0;display:flex;align-items:center;gap:12px;background:#fff;flex-shrink:0;}
+  .ia-avatar{width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,#833AE0,#a855f7);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+  .ia-avatar i{color:#fff;font-size:16px;}
+  .ia-status{display:flex;align-items:center;gap:5px;font-size:10px;color:#16a34a;margin-top:2px;}
+  .ia-status::before{content:'';width:6px;height:6px;border-radius:50%;background:#16a34a;display:inline-block;}
+  .ia-messages{flex:1;overflow-y:auto;padding:20px;display:flex;flex-direction:column;gap:14px;background:#f9f9fb;}
+  .ia-msg{display:flex;align-items:flex-start;gap:10px;max-width:80%;}
+  .ia-msg.user{align-self:flex-end;flex-direction:row-reverse;}
+  .ia-msg-av{width:28px;height:28px;border-radius:8px;flex-shrink:0;display:flex;align-items:center;justify-content:center;}
+  .ia-msg-av.bot{background:linear-gradient(135deg,#833AE0,#a855f7);}
+  .ia-msg-av.user{background:#1a1a2e;}
+  .ia-msg-av i{color:#fff;font-size:12px;}
+  .ia-msg-av span{color:#fff;font-size:9px;font-weight:700;}
+  .ia-bubble{padding:11px 14px;border-radius:12px;font-size:12px;line-height:1.6;color:#333;}
+  .ia-bubble.bot{background:#fff;border:0.5px solid #eee;border-radius:12px 12px 12px 2px;}
+  .ia-bubble.user{background:#833AE0;color:#fff;border-radius:12px 12px 2px 12px;}
+  .ia-bubble strong{color:#833AE0;}
+  .ia-bubble.user strong{color:#e4d0ff;}
+  .ia-msg-time{font-size:9px;color:#bbb;margin-top:4px;padding:0 4px;}
+  .ia-typing{display:flex;gap:4px;align-items:center;padding:4px 0;}
+  .ia-typing span{width:6px;height:6px;border-radius:50%;background:#bbb;animation:typing .9s infinite;}
+  .ia-typing span:nth-child(2){animation-delay:.2s;}
+  .ia-typing span:nth-child(3){animation-delay:.4s;}
+  @keyframes typing{0%,60%,100%{transform:translateY(0)}30%{transform:translateY(-5px)}}
+  .ia-input-area{padding:14px 20px;border-top:0.5px solid #eee;background:#fff;display:flex;gap:10px;align-items:center;flex-shrink:0;}
+  .ia-input{flex:1;border:0.5px solid #e0e0e0;border-radius:10px;padding:10px 14px;font-size:12px;color:#333;outline:none;resize:none;height:40px;line-height:1.4;font-family:inherit;}
+  .ia-input:focus{border-color:#833AE0;}
+  .ia-send{width:40px;height:40px;border-radius:10px;background:#833AE0;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:background .15s;}
+  .ia-send:hover{background:#6d2cc0;}
+  .ia-send i{color:#fff;font-size:16px;}
+  .ia-chip{display:inline-block;font-size:10px;padding:3px 9px;border-radius:8px;background:#f0e9fd;color:#833AE0;font-weight:600;margin:3px 3px 0 0;cursor:pointer;border:0.5px solid #d4b8f8;}
+  .ia-chip:hover{background:#e4d0ff;}
+
+  /* ══════════════════════════════════════════
+     RESPONSIVE — TABLET (≤ 1024px) y MOBILE (≤ 640px)
+     ══════════════════════════════════════════ */
+
+  .hamburger {
+    display: none; width: 36px; height: 36px; border-radius: 8px;
+    background: #f0e9fd; border: none; cursor: pointer;
+    align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  .hamburger i { color: #833AE0; font-size: 20px; }
+  .sidebar-overlay {
+    display: none; position: fixed; inset: 0; z-index: 90;
+    background: rgba(0,0,0,0.45);
+  }
+  .sidebar-overlay.open { display: block; }
+
+  /* ── TABLET ≤ 1024px ── */
+  @media (max-width: 1024px) {
+    .sidebar {
+      position: fixed; left: -220px; top: 0; bottom: 0;
+      width: 220px; z-index: 100; transition: left 0.25s ease;
+    }
+    .sidebar.open { left: 0; box-shadow: 4px 0 24px rgba(0,0,0,0.2); }
+    .hamburger { display: flex; }
+    .topbar { padding: 10px 16px; gap: 10px; }
+    .topbar h1 { font-size: 14px; }
+    .kpi-row-4 { grid-template-columns: repeat(2, 1fr); }
+    .bottom-row { grid-template-columns: 1fr; }
+    .alertas-strip { grid-template-columns: 1fr; }
+    .filter-cards { grid-template-columns: repeat(3, 1fr); }
+    .ot-table { overflow-x: auto; }
+    .ot-table-header { min-width: 680px; }
+    .ot-row { min-width: 680px; }
+    .kpi-strip.c4 { grid-template-columns: repeat(2, 1fr); }
+    .kpi-strip.c5 { grid-template-columns: repeat(3, 1fr); }
+    .row2 { grid-template-columns: 1fr !important; }
+    #ot-panel { width: 90vw !important; }
+    .agenda-sidebar { width: 175px; }
+    .agenda-grid { grid-template-columns: repeat(7, minmax(110px, 1fr)); }
+    .tec-th { grid-template-columns: 2fr 60px 100px 70px 80px 80px 60px !important; }
+    .tec-row { grid-template-columns: 2fr 60px 100px 70px 80px 80px 60px !important; }
+    .taller-col-header { grid-template-columns: 2fr 75px 90px 90px 100px 90px 36px !important; }
+    .taller-header { grid-template-columns: 2fr 75px 90px 90px 100px 90px 36px !important; }
+  }
+
+  /* ── MOBILE ≤ 640px ── */
+  @media (max-width: 640px) {
+    .topbar { padding: 10px 12px; gap: 8px; }
+    .topbar h1 { font-size: 13px; }
+    .demo-badge { display: none; }
+    .btn-excel { display: none; }
+    .period-tabs { display: none; }
+    .screen { padding: 12px; gap: 10px; }
+
+    /* Dashboard */
+    .kpi-row-4 { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+    .kpi-value { font-size: 22px; }
+    .bottom-row { grid-template-columns: 1fr; }
+    .alertas-strip { grid-template-columns: 1fr; gap: 7px; }
+    .filter-cards { grid-template-columns: repeat(2, 1fr); gap: 7px; }
+    .fcard { padding: 10px 12px; }
+    .fcard-num { font-size: 20px; }
+
+    /* Órdenes: cards en vez de tabla */
+    .ot-table-header { display: none !important; }
+    .ot-row, .ot-row.tcols {
+      display: flex !important;
+      flex-direction: column !important;
+      gap: 5px !important;
+      padding: 13px 14px !important;
+      min-width: 0 !important;
+      grid-template-columns: unset !important;
+    }
+    /* Ocultar campos no esenciales */
+    .ot-row .tec-cell-ord { display: none !important; }
+    .ot-row .taller-cell { display: none !important; }
+    .ot-row .chev { display: none !important; }
+    .ot-row .ta { display: none !important; }
+    .ot-title { white-space: normal !important; font-size: 13px; }
+    .ot-sub { font-size: 10px; }
+
+    /* Panel OT — bottom sheet */
+    #ot-overlay { align-items: flex-end; }
+    #ot-panel {
+      width: 100vw !important; height: 93vh !important;
+      border-radius: 18px 18px 0 0;
+    }
+
+    /* Modales */
+    #modal-bloqueo > div,
+    #modal-cierre > div {
+      width: calc(100vw - 28px); border-radius: 14px;
+    }
+
+    /* Analytics */
+    .kpi-strip.c4 { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+    .kpi-strip.c5 { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+    .row2 { grid-template-columns: 1fr !important; }
+    .sub-tabs { overflow-x: auto; flex-wrap: nowrap; -webkit-overflow-scrolling: touch; }
+    .stab { padding: 9px 11px; font-size: 11px; white-space: nowrap; }
+
+    /* Técnicos: columnas colapsadas a card */
+    .tec-th { display: none !important; }
+    .tec-row {
+      display: flex !important; flex-direction: row;
+      flex-wrap: wrap; align-items: center !important;
+      gap: 8px !important; padding: 12px 14px !important;
+    }
+    .tec-row .tec-id { flex: 1 1 100%; }
+    .tec-row > div:not(.tec-id):not(.fcr-cell) { font-size: 12px; }
+
+    /* Talleres: header oculto, filas como cards */
+    .taller-col-header { display: none !important; }
+    .taller-header {
+      display: flex !important; flex-direction: column;
+      gap: 6px; padding: 12px 14px !important;
+    }
+    .taller-id-cell { width: 100%; }
+    .taller-header > div:nth-child(n+4):not(.taller-id-cell) { display: none; }
+
+    /* Agenda: sidebar horizontal scroll + grid horizontal */
+    .agenda-layout { flex-direction: column; }
+    .agenda-sidebar {
+      width: 100%; height: auto; max-height: 90px;
+      border-right: none; border-bottom: 0.5px solid #eee;
+      display: flex; flex-direction: row;
+      overflow-x: auto; overflow-y: hidden;
+      -webkit-overflow-scrolling: touch;
+    }
+    .agenda-group-label { display: none; }
+    .agenda-resource {
+      flex-direction: column; align-items: center;
+      padding: 8px 10px; min-width: 66px; flex-shrink: 0;
+      border-bottom: none; border-right: 0.5px solid #f0f0f0;
+      gap: 3px;
+    }
+    .res-badge { margin-left: 0; margin-top: 2px; }
+    .res-sub { display: none; }
+    .res-name { font-size: 9px; text-align: center; white-space: nowrap; overflow: hidden; width: 56px; text-overflow: ellipsis; }
+    .agenda-grid-wrap { flex: 1; overflow: auto; -webkit-overflow-scrolling: touch; }
+    .agenda-grid { grid-template-columns: repeat(7, minmax(140px, 1fr)); }
+    .agenda-legend { display: none; }
+
+    /* Asistente IA */
+    #screen-ia { flex-direction: column; }
+    .ia-suggestions {
+      width: 100%; border-right: none;
+      border-bottom: 0.5px solid #eee;
+      flex-direction: row; padding: 10px 12px;
+      overflow-x: auto; overflow-y: hidden; gap: 8px;
+      flex-shrink: 0; height: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+    .ia-sug-label { display: none; }
+    .ia-sug-card {
+      min-width: 130px; padding: 9px 11px;
+      flex-direction: row; align-items: center; gap: 8px;
+      display: flex;
+    }
+    .ia-sug-icon { margin-bottom: 0; width: 24px; height: 24px; flex-shrink: 0; }
+    .ia-sug-sub { display: none; }
+    .ia-messages { padding: 12px; }
+    .ia-msg { max-width: 90%; }
+    .ia-input-area { padding: 10px 12px; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- ══════════════════════ SIDEBAR ══════════════════════ -->
+  <div class="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-icon"><span>H</span></div>
+      <span class="logo-text">henkancx</span>
+    </div>
+    <div class="role-badge"><span>Supervisor de área</span></div>
+    <div class="nav-section">
+      <div class="nav-label">principal</div>
+      <div class="nav-item active" onclick="goTo('dash',this)"><i class="ti ti-layout-dashboard"></i><span>Dashboard</span></div>
+      <div class="nav-item" onclick="goTo('ord',this)"><i class="ti ti-clipboard-list"></i><span>Órdenes</span><span class="nav-badge">6</span></div>
+      <div class="nav-item" onclick="goTo('agenda',this)"><i class="ti ti-calendar"></i><span>Agenda</span></div>
+      <div class="nav-item" onclick="goTo('ia',this)"><i class="ti ti-robot"></i><span>Asistente IA</span><span class="nav-badge-ia">IA</span></div>
+    </div>
+    <div class="nav-section">
+      <div class="nav-label">gestión</div>
+      <div class="nav-item"><i class="ti ti-users"></i><span>Clientes</span></div>
+      <div class="nav-item"><i class="ti ti-settings"></i><span>Administración</span></div>
+    </div>
+    <div class="nav-section" style="margin-top:8px">
+      <div class="nav-label">reportes</div>
+      <div class="nav-item" onclick="goTo('analytics',this)"><i class="ti ti-chart-bar"></i><span>Analytics</span></div>
+    </div>
+    <div class="sidebar-footer">
+      <div class="sidebar-user">
+        <div class="user-av">SP</div>
+        <div><div class="user-name">Supervisor Área</div><div class="user-role">Control y seguimiento</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════ MAIN ══════════════════════ -->
+  <div class="main">
+
+    <!-- Topbar Dashboard -->
+    <div class="topbar" id="tb-dash">
+      <button class="hamburger" onclick="openSidebar()"><i class="ti ti-menu-2"></i></button>
+      <h1>Dashboard</h1>
+      <div class="demo-badge">DEMO</div>
+      <i class="ti ti-bell icon-btn"></i>
+      <button class="btn-nueva"><i class="ti ti-plus" style="font-size:12px"></i> Nueva ODT</button>
+    </div>
+
+    <!-- Topbar Órdenes -->
+    <div class="topbar" id="tb-ord" style="display:none">
+      <button class="hamburger" onclick="openSidebar()"><i class="ti ti-menu-2"></i></button>
+      <h1>Órdenes de Trabajo <span id="ord-count" style="font-size:13px;color:#aaa;font-weight:400">6 órdenes</span></h1>
+      <div class="demo-badge">DEMO</div>
+      <button class="btn-excel"><i class="ti ti-file-spreadsheet" style="font-size:13px;color:#16a34a"></i> Descargar Excel</button>
+      <button class="btn-nueva"><i class="ti ti-plus" style="font-size:12px"></i> Nueva ODT</button>
+    </div>
+
+    <!-- Topbar Agenda -->
+    <div class="topbar" id="tb-agenda" style="display:none">
+      <button class="hamburger" onclick="openSidebar()"><i class="ti ti-menu-2"></i></button>
+      <h1>Agenda semanal</h1>
+      <div class="demo-badge">DEMO</div>
+      <div class="period-tabs">
+        <div class="ptab" onclick="agendaNav(-1)" style="cursor:pointer"><i class="ti ti-chevron-left" style="font-size:11px"></i></div>
+        <div class="ptab active" id="agenda-week-label" style="min-width:130px;text-align:center">16 – 22 jun 2025</div>
+        <div class="ptab" onclick="agendaNav(1)" style="cursor:pointer"><i class="ti ti-chevron-right" style="font-size:11px"></i></div>
+      </div>
+      <button class="btn-nueva"><i class="ti ti-plus" style="font-size:12px"></i> Nueva OT</button>
+    </div>
+
+    <!-- Topbar Asistente IA -->
+    <div class="topbar" id="tb-ia" style="display:none">
+      <button class="hamburger" onclick="openSidebar()"><i class="ti ti-menu-2"></i></button>
+      <h1>Asistente IA</h1>
+      <div class="demo-badge" style="background:#f0e9fd;color:#833AE0;border-color:#d4b8f8;"><i class="ti ti-sparkles" style="font-size:11px"></i> DEMO</div>
+    </div>
+
+    <!-- Topbar Analytics -->
+    <div class="topbar" id="tb-analytics" style="display:none">
+      <button class="hamburger" onclick="openSidebar()"><i class="ti ti-menu-2"></i></button>
+      <h1>Analytics</h1>
+      <div class="demo-badge"><i class="ti ti-stars" style="font-size:11px"></i> DEMO</div>
+      <div class="period-tabs">
+        <div class="ptab">7 días</div>
+        <div class="ptab active">Este mes</div>
+        <div class="ptab">Trimestre</div>
+      </div>
+      <i class="ti ti-download icon-btn" style="color:#833AE0"></i>
+    </div>
+
+    <!-- Sub-tabs Analytics (fuera del scroll) -->
+    <div class="sub-tabs" id="stabs-analytics" style="display:none">
+      <div class="stab active" onclick="showTab('resumen',this)"><i class="ti ti-trending-up"></i> Resumen</div>
+      <div class="stab" onclick="showTab('sla',this)"><i class="ti ti-clock-check"></i> SLA y aging</div>
+      <div class="stab" onclick="showTab('tecnicos',this)"><i class="ti ti-tool"></i> Técnicos y talleres</div>
+      <div class="stab" onclick="showTab('reincidencia',this)"><i class="ti ti-refresh-alert"></i> Reincidencia</div>
+      <div class="stab" onclick="showTab('nps',this)"><i class="ti ti-mood-smile"></i> NPS</div>
+    </div>
+
+    <!-- ══════ SCREEN: DASHBOARD ══════ -->
+    <div class="screen active" id="screen-dash">
+
+      <div class="kpi-row-4">
+        <div class="kpi-card"><div class="kpi-icon purple"><i class="ti ti-clipboard-list"></i></div><div class="kpi-value">24</div><div class="kpi-label">Órdenes activas</div><div class="kpi-trend trend-up-good"><i class="ti ti-trending-up" style="font-size:11px"></i> +12% esta semana</div></div>
+        <div class="kpi-card"><div class="kpi-icon blue"><i class="ti ti-users"></i></div><div class="kpi-value">6</div><div class="kpi-label">Técnicos en campo</div><div class="kpi-trend trend-neutral"><i class="ti ti-clock" style="font-size:11px"></i> 2 disponibles ahora</div></div>
+        <div class="kpi-card"><div class="kpi-icon green"><i class="ti ti-circle-check"></i></div><div class="kpi-value">37</div><div class="kpi-label">Completadas hoy</div><div class="kpi-trend trend-up-good"><i class="ti ti-trending-up" style="font-size:11px"></i> +8% vs ayer</div></div>
+        <div class="kpi-card"><div class="kpi-icon amber"><i class="ti ti-clock"></i></div><div class="kpi-value">2.4h</div><div class="kpi-label">Tiempo promedio</div><div class="kpi-trend trend-down-good"><i class="ti ti-trending-down" style="font-size:11px"></i> -15% este mes</div></div>
+      </div>
+
+      <div class="kpi-row-4">
+        <div class="kpi-card-g"><div class="kg-label">Aging promedio OT</div><div class="kg-value warn">4.7 <span style="font-size:13px;font-weight:500;color:#888">días</span></div><div class="kg-sub warn">▲ +0.8 días vs mes anterior</div><div class="kg-bar"><div class="kg-fill" style="width:62%;background:#f59e0b"></div></div></div>
+        <div class="kpi-card-g kalert"><div class="kg-label">OTs bloqueadas ahora</div><div class="kg-value danger">7 <span style="font-size:13px;font-weight:500;color:#c0392b">/ 24</span></div><div class="kg-sub danger">29% del total activo bloqueado</div><div class="kg-bar"><div class="kg-fill" style="width:29%;background:#e24b4a"></div></div></div>
+        <div class="kpi-card-g"><div class="kg-label">Tasa FCR</div><div class="kg-value ok">68%</div><div class="kg-sub">Resueltas en 1 visita · meta: 75%</div><div class="kg-bar"><div class="kg-fill" style="width:68%;background:#16a34a"></div></div></div>
+        <div class="kpi-card-g kwarn"><div class="kg-label">OTs fuera de SLA</div><div class="kg-value warn">5</div><div class="kg-sub warn">3 críticas · 2 en alerta</div><div class="kg-bar"><div class="kg-fill" style="width:21%;background:#f59e0b"></div></div></div>
+      </div>
+
+      <div class="bottom-row">
+        <div class="panel">
+          <div class="panel-hdr"><div class="panel-title"><i class="ti ti-trending-up"></i> OTs cerradas por semana</div></div>
+          <div class="bar-chart">
+            <div class="bar-col"><div class="bv">41</div><div class="bar" style="height:42px;background:#e0d4f7"></div><div class="bl">S1</div></div>
+            <div class="bar-col"><div class="bv">38</div><div class="bar" style="height:38px;background:#e0d4f7"></div><div class="bl">S2</div></div>
+            <div class="bar-col"><div class="bv">45</div><div class="bar" style="height:46px;background:#e0d4f7"></div><div class="bl">S3</div></div>
+            <div class="bar-col"><div class="bv">52</div><div class="bar" style="height:53px;background:#c9a8f5"></div><div class="bl">S4</div></div>
+            <div class="bar-col"><div class="bv">49</div><div class="bar" style="height:50px;background:#c9a8f5"></div><div class="bl">S5</div></div>
+            <div class="bar-col"><div class="bv">58</div><div class="bar" style="height:59px;background:#a87af0"></div><div class="bl">S6</div></div>
+            <div class="bar-col"><div class="bv">61</div><div class="bar" style="height:62px;background:#a87af0"></div><div class="bl">S7</div></div>
+            <div class="bar-col"><div class="bv" style="color:#833AE0;font-weight:700">67</div><div class="bar" style="height:68px;background:#833AE0"></div><div class="bl" style="color:#833AE0;font-weight:600">S8</div></div>
+          </div>
+          <div class="chart-footer">
+            <div><div class="cf-lbl">Promedio</div><div class="cf-val">51.4</div></div>
+            <div><div class="cf-lbl">Mejor semana</div><div class="cf-val" style="color:#833AE0">67 (S8)</div></div>
+            <div><div class="cf-lbl">Tendencia</div><div class="cf-val" style="color:#16a34a">↑ +63%</div></div>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-hdr"><div class="panel-title"><i class="ti ti-users"></i> Técnicos en campo</div></div>
+          <div class="tec-col-hdr"><span>Técnico</span><span>Origen</span><span>Estado</span></div>
+          <div class="tec-item"><div class="tec-identity"><div class="tec-av av-cr">CR</div><div><div class="tec-name">Carlos Ruiz</div><div class="tec-loc">En servicio · Zona Norte</div></div></div><div><span class="origen-tag origen-interno">Interno</span></div><div><span class="tec-status ts-prog">En Progreso</span></div></div>
+          <div class="tec-item"><div class="tec-identity"><div class="tec-av av-al">AL</div><div><div class="tec-name">Ana López</div><div class="tec-loc">En ruta · Zona Sur</div></div></div><div><span class="origen-tag origen-interno">Interno</span></div><div><span class="tec-status ts-prog">En Progreso</span></div></div>
+          <div class="tec-item"><div class="tec-identity"><div class="tec-av" style="background:#6366f1">RV</div><div><div class="tec-name">Roberto Vargas</div><div class="tec-loc">En servicio · Zona Norte</div></div></div><div><span class="origen-tag origen-taller">Taller</span><span class="origen-sub">Tecnoserv Panamá</span></div><div><span class="tec-status ts-prog">En Progreso</span></div></div>
+          <div class="tec-item"><div class="tec-identity"><div class="tec-av av-lm">LM</div><div><div class="tec-name">Luis Mora</div><div class="tec-loc">Disponible · Zona Norte</div></div></div><div><span class="origen-tag origen-interno">Interno</span></div><div><span class="tec-status ts-disp">Disponible</span></div></div>
+          <div class="tec-item"><div class="tec-identity"><div class="tec-av" style="background:#ec4899">MA</div><div><div class="tec-name">Miguel Arias</div><div class="tec-loc">En servicio · Zona Central</div></div></div><div><span class="origen-tag origen-taller">Taller</span><span class="origen-sub">Frío Total S.A.</span></div><div><span class="tec-status ts-prog">En Progreso</span></div></div>
+          <div class="tec-item"><div class="tec-identity"><div class="tec-av av-dp">DP</div><div><div class="tec-name">Diego Pérez</div><div class="tec-loc">Disponible · Zona Central</div></div></div><div><span class="origen-tag origen-interno">Interno</span></div><div><span class="tec-status ts-disp">Disponible</span></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════ SCREEN: ÓRDENES ══════ -->
+    <div class="screen" id="screen-ord">
+
+      <div class="alertas-strip">
+        <div class="alerta-card ared"><i class="ti ti-clock-exclamation"></i><div><div class="alerta-titulo">WO-2450 sin actualizar por 2h</div><div class="alerta-sub">Ana López — Torre Central Offices</div><div class="alerta-time">hace 15 min</div></div></div>
+        <div class="alerta-card aamber"><i class="ti ti-tool"></i><div><div class="alerta-titulo">WO-2448 requiere repuesto</div><div class="alerta-sub">María Castro — Hotel Continental</div><div class="alerta-time">hace 1h</div></div></div>
+        <div class="alerta-card apurple"><i class="ti ti-user-check"></i><div><div class="alerta-titulo">Luis Mora disponible</div><div class="alerta-sub">Zona Norte libre para asignación</div><div class="alerta-time">hace 5 min</div></div></div>
+      </div>
+
+      <div class="filter-cards">
+        <div class="fcard fcard-total" onclick="setFilter('all')"><i class="ti ti-clipboard-list fcard-icon"></i><div class="fcard-num">24</div><div class="fcard-label">Total órdenes</div></div>
+        <div class="fcard fcard-todas selected" data-f="todas" onclick="setFilter('todas')"><i class="ti ti-layout-list fcard-icon"></i><div class="fcard-num">6</div><div class="fcard-label">Todas</div></div>
+        <div class="fcard fcard-prog" data-f="progreso" onclick="setFilter('progreso')"><i class="ti ti-clock fcard-icon"></i><div class="fcard-num">1</div><div class="fcard-label">En progreso</div></div>
+        <div class="fcard fcard-pend" data-f="pendiente" onclick="setFilter('pendiente')"><i class="ti ti-hourglass fcard-icon"></i><div class="fcard-num">2</div><div class="fcard-label">Pendiente</div></div>
+        <div class="fcard fcard-comp" data-f="completada" onclick="setFilter('completada')"><i class="ti ti-circle-check fcard-icon"></i><div class="fcard-num">2</div><div class="fcard-label">Completada</div></div>
+        <div class="fcard fcard-bloq" data-f="bloqueada" onclick="setFilter('bloqueada')"><i class="ti ti-lock fcard-icon"></i><div class="fcard-num">1</div><div class="fcard-label">Bloqueada</div></div>
+      </div>
+
+      <div class="filter-hint"><i class="ti ti-hand-click" style="font-size:12px"></i> Toca una tarjeta para filtrar por ese estado</div>
+
+      <div class="search-bar">
+        <div class="search-input"><i class="ti ti-search" style="color:#ccc;font-size:15px"></i><span>Buscar ODT, cliente, equipo...</span></div>
+        <div class="vtab active"><i class="ti ti-list"></i></div>
+        <div class="vtab"><i class="ti ti-layout-columns"></i></div>
+      </div>
+
+      <div class="ot-table">
+        <div class="ot-table-header tcols">
+          <span>ID</span><span>Orden de trabajo</span><span>Cliente</span><span>Tipo OT</span><span>Prior.</span><span>Estado</span><span>Tipo asignación</span><span>Taller</span><span>Técnico</span><span></span>
+        </div>
+        <div class="ot-row tcols" data-e="bloqueada"><div class="ot-id">WO-2451</div><div><div class="ot-title">Reparación lavadora</div><div class="ot-sub">N/S: WM-2023-001</div></div><div class="cell">Familia Gómez</div><div><span class="tipo-badge tipo-rep">Reparación</span></div><div><span class="prio prio-alta">Alta</span></div><div><span class="estado-badge e-bloq">Esp. repuesto</span></div><div><span class="ta ta-int">Interno</span></div><div class="taller-int">Interno</div><div class="tec-cell-ord"><div class="tec-av-sm av-cr">CR</div><span class="tec-n">Carlos Ruiz</span></div><div class="chev"><i class="ti ti-chevron-right"></i></div></div>
+        <div class="ot-row tcols" data-e="progreso"><div class="ot-id">WO-2450</div><div><div class="ot-title">Mantenimiento A/C</div><div class="ot-sub">N/S: AC-4872-X</div></div><div class="cell">Torre Central Offices</div><div><span class="tipo-badge tipo-mant">Mantenimiento</span></div><div><span class="prio prio-media">Media</span></div><div><span class="estado-badge e-prog">En Progreso</span></div><div><span class="ta ta-int">Interno</span></div><div class="taller-int">Interno</div><div class="tec-cell-ord"><div class="tec-av-sm av-al">AL</div><span class="tec-n">Ana López</span></div><div class="chev"><i class="ti ti-chevron-right"></i></div></div>
+        <div class="ot-row tcols" data-e="completada"><div class="ot-id">WO-2449</div><div><div class="ot-title">Instalación refrigeradora</div><div class="ot-sub">N/S: RF-5588-FHZ</div></div><div class="cell">Restaurante La Plaza</div><div><span class="tipo-badge tipo-inst">Instalación</span></div><div><span class="prio prio-alta">Alta</span></div><div><span class="estado-badge e-comp">Completada</span></div><div><span class="ta ta-tal">Taller</span></div><div class="taller-cell"><div class="taller-dot" style="background:#2563eb"></div><span class="taller-name-cell">Tecnoserv Panamá</span></div><div class="tec-cell-ord"><div class="tec-av-sm" style="background:#6366f1">RV</div><span class="tec-n">Roberto Vargas</span></div><div class="chev"><i class="ti ti-chevron-right"></i></div></div>
+        <div class="ot-row tcols" data-e="pendiente"><div class="ot-id">WO-2448</div><div><div class="ot-title">Falla horno eléctrico</div><div class="ot-sub">N/S: HE-7610-MX</div></div><div class="cell">Hotel Continental</div><div><span class="tipo-badge tipo-rep">Reparación</span></div><div><span class="prio prio-baja">Baja</span></div><div><span class="estado-badge e-pend">Pendiente</span></div><div><span class="ta ta-int">Interno</span></div><div class="taller-int">Interno</div><div class="tec-cell-ord"><div class="tec-av-sm av-mc">MC</div><span class="tec-n">María Castro</span></div><div class="chev"><i class="ti ti-chevron-right"></i></div></div>
+        <div class="ot-row tcols" data-e="pendiente"><div class="ot-id">WO-2447</div><div><div class="ot-title">Reparación A/C central</div><div class="ot-sub">N/S: AC-0180-CC</div></div><div class="cell">Banco Nacional</div><div><span class="tipo-badge tipo-rep">Reparación</span></div><div><span class="prio prio-alta">Alta</span></div><div><span class="estado-badge e-pend">Pendiente</span></div><div><span class="ta ta-tal">Taller</span></div><div class="taller-cell"><div class="taller-dot" style="background:#0891b2"></div><span class="taller-name-cell">Frío Total S.A.</span></div><div class="tec-cell-ord"><div class="tec-av-sm" style="background:#ec4899">MA</div><span class="tec-n">Miguel Arias</span></div><div class="chev"><i class="ti ti-chevron-right"></i></div></div>
+        <div class="ot-row tcols" data-e="completada"><div class="ot-id">WO-2446</div><div><div class="ot-title">Mantenimiento preventivo</div><div class="ot-sub">N/S: LV-3314-PP</div></div><div class="cell">Familia Rodríguez</div><div><span class="tipo-badge tipo-mant">Mantenimiento</span></div><div><span class="prio prio-media">Media</span></div><div><span class="estado-badge e-comp">Completada</span></div><div><span class="ta ta-tal">Taller</span></div><div class="taller-cell"><div class="taller-dot" style="background:#2563eb"></div><span class="taller-name-cell">Tecnoserv Panamá</span></div><div class="tec-cell-ord"><div class="tec-av-sm" style="background:#06b6d4">JP</div><span class="tec-n">Jorge Pacheco</span></div><div class="chev"><i class="ti ti-chevron-right"></i></div></div>
+      </div>
+    </div><!-- /screen-ord -->
+
+    <!-- ══════ OVERLAY: PANEL DETALLE OT ══════ -->
+    <div id="ot-overlay" style="display:none;position:fixed;inset:0;z-index:200;background:rgba(20,20,40,0.45);display:none;align-items:flex-start;justify-content:flex-end;">
+      <div id="ot-panel" style="width:560px;height:100vh;background:#fff;overflow-y:auto;box-shadow:-4px 0 32px rgba(0,0,0,0.14);display:flex;flex-direction:column;">
+
+        <!-- HEADER -->
+        <div style="padding:18px 20px 14px;border-bottom:0.5px solid #f0f0f0;flex-shrink:0;background:#fff;position:sticky;top:0;z-index:10;">
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:6px;">
+            <div>
+              <div style="font-size:11px;font-weight:700;color:#833AE0;margin-bottom:3px;">WO-2451 · Lavadora</div>
+              <div style="font-size:18px;font-weight:700;color:#1a1a2e;">Reparación lavadora LG</div>
+            </div>
+            <button onclick="closeOT()" style="width:28px;height:28px;border-radius:7px;border:0.5px solid #e5e5e5;background:#f9f9f9;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#888;font-size:15px;flex-shrink:0;">✕</button>
+          </div>
+          <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+            <span class="estado-badge e-bloq">Esp. repuesto</span>
+            <span class="tipo-badge tipo-rep">Reparación</span>
+            <span class="prio prio-alta" style="font-size:10px;background:#fff0f0;padding:2px 8px;border-radius:4px;">Alta</span>
+          </div>
+          <!-- TOGGLE ROL -->
+          <div style="display:flex;gap:4px;margin-top:12px;background:#f5f5f7;border-radius:8px;padding:3px;">
+            <button id="btn-rol-sup" onclick="setRol('supervisor')" style="flex:1;padding:5px 10px;border-radius:6px;border:none;font-size:11px;font-weight:600;cursor:pointer;background:#833AE0;color:#fff;">👔 Supervisor</button>
+            <button id="btn-rol-tal" onclick="setRol('taller')" style="flex:1;padding:5px 10px;border-radius:6px;border:none;font-size:11px;font-weight:600;cursor:pointer;background:transparent;color:#888;">🔧 Taller / Técnico</button>
+          </div>
+        </div>
+
+        <!-- BODY SCROLL -->
+        <div style="padding:16px 20px;display:flex;flex-direction:column;gap:18px;">
+
+          <!-- ── LÍNEA DE TIEMPO ── -->
+          <div>
+            <div style="display:flex;align-items:center;gap:7px;margin-bottom:12px;">
+              <i class="ti ti-timeline" style="color:#833AE0;font-size:14px;"></i>
+              <span style="font-size:10px;font-weight:700;color:#aaa;text-transform:uppercase;letter-spacing:.08em;">Línea de tiempo</span>
+            </div>
+            <div style="position:relative;padding-left:24px;">
+              <!-- línea vertical -->
+              <div style="position:absolute;left:7px;top:8px;bottom:8px;width:1.5px;background:#eee;"></div>
+              <!-- estados -->
+              <div class="tl-item tl-done">
+                <div class="tl-dot tl-dot-done"></div>
+                <div class="tl-content"><div class="tl-label">Recibida</div><div class="tl-time">12 jun · 08:14 am — vía WhatsApp</div></div>
+              </div>
+              <div class="tl-item tl-done">
+                <div class="tl-dot tl-dot-done"></div>
+                <div class="tl-content"><div class="tl-label">Diagnóstico iniciado</div><div class="tl-time">12 jun · 09:30 am — Carlos Ruiz</div></div>
+              </div>
+              <div class="tl-item tl-done">
+                <div class="tl-dot tl-dot-done"></div>
+                <div class="tl-content"><div class="tl-label">Asignada a taller</div><div class="tl-time">12 jun · 10:00 am — Tecnoserv Panamá</div></div>
+              </div>
+              <div class="tl-item tl-done">
+                <div class="tl-dot tl-dot-done"></div>
+                <div class="tl-content"><div class="tl-label">En progreso</div><div class="tl-time">12 jun · 11:00 am — visita iniciada</div></div>
+              </div>
+              <div class="tl-item tl-blocked">
+                <div class="tl-dot tl-dot-blocked"></div>
+                <div class="tl-content">
+                  <div style="display:flex;align-items:center;gap:6px;"><div class="tl-label" style="color:#c0392b;">Bloqueada</div><span style="font-size:9px;font-weight:700;padding:1px 7px;border-radius:8px;background:#fff0f0;color:#c0392b;">Esp. repuesto</span></div>
+                  <div class="tl-time" style="color:#c0392b;">13 jun · 08:45 am · Correa LG 6602-001655</div>
+                </div>
+              </div>
+              <div class="tl-item tl-pending">
+                <div class="tl-dot tl-dot-pending"></div>
+                <div class="tl-content"><div class="tl-label" style="color:#bbb;">Lista para cerrar</div></div>
+              </div>
+              <div class="tl-item tl-pending" style="margin-bottom:0;">
+                <div class="tl-dot tl-dot-pending"></div>
+                <div class="tl-content"><div class="tl-label" style="color:#bbb;">Completada</div></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ── CLIENTE Y EQUIPO ── -->
+          <div>
+            <div style="display:flex;align-items:center;gap:7px;margin-bottom:12px;">
+              <i class="ti ti-user" style="color:#833AE0;font-size:14px;"></i>
+              <span style="font-size:10px;font-weight:700;color:#aaa;text-transform:uppercase;letter-spacing:.08em;">Cliente y equipo</span>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+              <div class="det-field"><div class="det-label">Cliente</div><div class="det-val">Familia Gómez</div></div>
+              <div class="det-field"><div class="det-label">Equipo</div><div class="det-val">LG WM3997HWA</div></div>
+              <div class="det-field"><div class="det-label">Tipo de equipo</div><div class="det-val">Lavadora</div></div>
+              <div class="det-field"><div class="det-label">N° de serie</div><div class="det-val">LG2023001</div></div>
+              <div class="det-field"><div class="det-label">Teléfono</div><div class="det-val" style="color:#833AE0;">+507 6111-2222</div></div>
+              <div class="det-field" id="field-tec">
+                <div class="det-label">Técnico asignado</div>
+                <div class="det-val" style="display:flex;align-items:center;gap:6px;"><div class="av av-cr-a" style="width:20px;height:20px;font-size:8px;">CR</div>Carlos Ruiz</div>
+              </div>
+              <div class="det-field" style="grid-column:1/-1;"><div class="det-label">Dirección</div><div class="det-val">Bella Vista, Calle 50, Panamá</div></div>
+            </div>
+          </div>
+
+          <!-- ── TALLERES SUGERIDOS (solo supervisor) ── -->
+          <div id="sec-talleres">
+            <div style="display:flex;align-items:center;gap:7px;margin-bottom:4px;">
+              <i class="ti ti-building-store" style="color:#833AE0;font-size:14px;"></i>
+              <span style="font-size:10px;font-weight:700;color:#aaa;text-transform:uppercase;letter-spacing:.08em;">Talleres sugeridos</span>
+            </div>
+            <div style="font-size:10px;color:#bbb;margin-bottom:10px;display:flex;align-items:center;gap:5px;"><i class="ti ti-map-pin" style="font-size:11px;color:#833AE0;"></i> Zona del cliente: <strong style="color:#555;">Bella Vista, Panamá</strong> · ordenados por proximidad y SLA</div>
+            <!-- Taller 1 - ASIGNADO -->
+            <div style="border:1.5px solid #833AE0;border-radius:10px;padding:12px 14px;margin-bottom:8px;background:#faf7ff;position:relative;">
+              <div style="position:absolute;top:10px;right:12px;font-size:9px;font-weight:700;padding:2px 8px;border-radius:8px;background:#f0e9fd;color:#833AE0;">✓ Asignado</div>
+              <div style="display:flex;align-items:flex-start;gap:10px;">
+                <div style="width:34px;height:34px;border-radius:9px;background:#e6f9f0;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i class="ti ti-building-store" style="color:#16a34a;font-size:15px;"></i></div>
+                <div style="flex:1;">
+                  <div style="font-size:13px;font-weight:700;color:#1a1a2e;">Tecnoserv Panamá</div>
+                  <div style="font-size:10px;color:#aaa;margin-top:1px;">Zona Norte · 3 técnicos disponibles</div>
+                  <div style="display:flex;gap:10px;margin-top:8px;flex-wrap:wrap;">
+                    <div style="text-align:center;"><div style="font-size:11px;font-weight:700;color:#1a1a2e;">0.8 km</div><div style="font-size:9px;color:#bbb;">distancia</div></div>
+                    <div style="text-align:center;"><div style="font-size:11px;font-weight:700;color:#16a34a;">★ 4.6</div><div style="font-size:9px;color:#bbb;">rating</div></div>
+                    <div style="text-align:center;"><div style="font-size:11px;font-weight:700;color:#16a34a;">96%</div><div style="font-size:9px;color:#bbb;">SLA cumpl.</div></div>
+                    <div style="text-align:center;"><div style="font-size:11px;font-weight:700;color:#1a1a2e;">3</div><div style="font-size:9px;color:#bbb;">disponibles</div></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <!-- Taller 2 -->
+            <div style="border:0.5px solid #e8e8e8;border-radius:10px;padding:12px 14px;margin-bottom:8px;background:#fff;">
+              <div style="display:flex;align-items:flex-start;gap:10px;">
+                <div style="width:34px;height:34px;border-radius:9px;background:#e8f0fe;display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i class="ti ti-building-store" style="color:#2563eb;font-size:15px;"></i></div>
+                <div style="flex:1;">
+                  <div style="font-size:13px;font-weight:700;color:#1a1a2e;">Frío Total S.A.</div>
+                  <div style="font-size:10px;color:#aaa;margin-top:1px;">Zona Central · 1 técnico disponible</div>
+                  <div style="display:flex;gap:10px;margin-top:8px;flex-wrap:wrap;">
+                    <div style="text-align:center;"><div style="font-size:11px;font-weight:700;color:#1a1a2e;">2.1 km</div><div style="font-size:9px;color:#bbb;">distancia</div></div>
+                    <div style="font-size:11px;font-weight:700;color:#c27b00;">★ 4.0</div>
+                    <div style="text-align:center;"><div style="font-size:11px;font-weight:700;color:#c27b00;">84%</div><div style="font-size:9px;color:#bbb;">SLA cumpl.</div></div>
+                    <div style="text-align:center;"><div style="font-size:11px;font-weight:700;color:#1a1a2e;">1</div><div style="font-size:9px;color:#bbb;">disponible</div></div>
+                  </div>
+                </div>
+                <button onclick="asignarTaller(this,'Frío Total S.A.')" style="padding:6px 14px;border-radius:7px;background:#833AE0;color:#fff;border:none;font-size:11px;font-weight:600;cursor:pointer;white-space:nowrap;flex-shrink:0;align-self:center;">Asignar →</button>
+              </div>
+            </div>
+            <!-- Taller excluido -->
+            <div style="background:#fff8f8;border:0.5px solid #f5d0d0;border-radius:8px;padding:8px 12px;display:flex;align-items:center;gap:7px;">
+              <i class="ti ti-alert-triangle" style="color:#c0392b;font-size:13px;flex-shrink:0;"></i>
+              <span style="font-size:10px;color:#c0392b;"><strong>ElectroFix Panamá</strong> excluido automáticamente — SLA 61% (mínimo requerido: 70%)</span>
+            </div>
+          </div>
+
+          <!-- ── DESCRIPCIÓN DEL PROBLEMA ── -->
+          <div>
+            <div style="display:flex;align-items:center;gap:7px;margin-bottom:10px;">
+              <i class="ti ti-file-description" style="color:#833AE0;font-size:14px;"></i>
+              <span style="font-size:10px;font-weight:700;color:#aaa;text-transform:uppercase;letter-spacing:.08em;">Descripción del problema</span>
+            </div>
+            <div id="desc-readonly" style="background:#f9f9fb;border-radius:9px;padding:12px 14px;font-size:12px;color:#444;line-height:1.6;">Lavadora no centrifuga. El tambor gira lento y produce ruido extraño al final del ciclo de centrifugado.</div>
+            <textarea id="desc-edit" style="display:none;width:100%;background:#f9f9fb;border:1.5px solid #833AE0;border-radius:9px;padding:12px 14px;font-size:12px;color:#444;line-height:1.6;resize:none;height:80px;box-sizing:border-box;">Lavadora no centrifuga. El tambor gira lento y produce ruido extraño al final del ciclo de centrifugado.</textarea>
+          </div>
+
+          <!-- ── CHECKLIST ── -->
+          <div>
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+              <div style="display:flex;align-items:center;gap:7px;">
+                <i class="ti ti-checklist" style="color:#833AE0;font-size:14px;"></i>
+                <span style="font-size:10px;font-weight:700;color:#aaa;text-transform:uppercase;letter-spacing:.08em;">Checklist — Lavadora</span>
+              </div>
+              <span style="font-size:10px;color:#888;" id="chk-progress">2/8 · 25%</span>
+            </div>
+            <div style="height:3px;background:#f0f0f0;border-radius:2px;margin-bottom:12px;overflow:hidden;">
+              <div id="chk-bar" style="height:100%;width:25%;background:#833AE0;border-radius:2px;transition:width 0.3s;"></div>
+            </div>
+            <div id="checklist-wrap" style="display:flex;flex-direction:column;gap:6px;">
+              <div class="chk-item chk-done" onclick="toggleChk(this)"><div class="chk-box chk-box-done"><i class="ti ti-check" style="font-size:10px;color:#fff;"></i></div><span>Desconectar equipo y revisar alimentación eléctrica</span></div>
+              <div class="chk-item chk-done" onclick="toggleChk(this)"><div class="chk-box chk-box-done"><i class="ti ti-check" style="font-size:10px;color:#fff;"></i></div><span>Verificar motor de lavado y correa de transmisión</span></div>
+              <div class="chk-item" onclick="toggleChk(this)"><div class="chk-box"></div><span>Inspeccionar rodamientos del tambor (rotar manualmente)</span></div>
+              <div class="chk-item" onclick="toggleChk(this)"><div class="chk-box"></div><span>Comprobar amortiguadores y resortes de suspensión</span></div>
+              <div class="chk-item" onclick="toggleChk(this)"><div class="chk-box"></div><span>Revisar bomba de desagüe y filtro</span></div>
+              <div class="chk-item" onclick="toggleChk(this)"><div class="chk-box"></div><span>Probar ciclo completo incluyendo centrifugado</span></div>
+              <div class="chk-item" onclick="toggleChk(this)"><div class="chk-box"></div><span>Fotografiar antes y después de la reparación</span></div>
+              <div class="chk-item" onclick="toggleChk(this)"><div class="chk-box"></div><span>Obtener firma del cliente</span></div>
+            </div>
+          </div>
+
+          <!-- ── EVIDENCIA MULTIMEDIA ── -->
+          <div>
+            <div style="display:flex;align-items:center;gap:7px;margin-bottom:12px;">
+              <i class="ti ti-photo-video" style="color:#833AE0;font-size:14px;"></i>
+              <span style="font-size:10px;font-weight:700;color:#aaa;text-transform:uppercase;letter-spacing:.08em;">Evidencia multimedia</span>
+            </div>
+            <!-- Fotos -->
+            <div style="font-size:10px;font-weight:600;color:#888;margin-bottom:7px;text-transform:uppercase;letter-spacing:.05em;">Fotografías</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:12px;">
+              <div class="media-slot"><i class="ti ti-camera-plus" style="font-size:18px;color:#ccc;"></i><span class="media-label">Antes</span></div>
+              <div class="media-slot"><i class="ti ti-camera-plus" style="font-size:18px;color:#ccc;"></i><span class="media-label">Durante</span></div>
+              <div class="media-slot"><i class="ti ti-camera-plus" style="font-size:18px;color:#ccc;"></i><span class="media-label">Después</span></div>
+            </div>
+            <!-- Videos -->
+            <div style="font-size:10px;font-weight:600;color:#888;margin-bottom:7px;text-transform:uppercase;letter-spacing:.05em;">Videos</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+              <div class="media-slot media-video"><i class="ti ti-video-plus" style="font-size:18px;color:#c9a8f5;"></i><span class="media-label">Video diagnóstico</span><span style="font-size:9px;color:#c9a8f5;">mp4 · máx 100MB</span></div>
+              <div class="media-slot media-video"><i class="ti ti-video-plus" style="font-size:18px;color:#c9a8f5;"></i><span class="media-label">Video de cierre</span><span style="font-size:9px;color:#c9a8f5;">mp4 · máx 100MB</span></div>
+            </div>
+          </div>
+
+          <!-- ── MATERIALES Y REPUESTOS ── -->
+          <div id="sec-materiales">
+            <div style="display:flex;align-items:center;gap:7px;margin-bottom:10px;">
+              <i class="ti ti-tool" style="color:#833AE0;font-size:14px;"></i>
+              <span style="font-size:10px;font-weight:700;color:#aaa;text-transform:uppercase;letter-spacing:.08em;">Materiales y repuestos</span>
+            </div>
+            <div style="display:flex;align-items:center;justify-content:space-between;background:#f9f9fb;border-radius:8px;padding:10px 13px;margin-bottom:7px;">
+              <span style="font-size:12px;color:#333;">Correa LG 6602-001655</span>
+              <button style="background:none;border:none;color:#ccc;cursor:pointer;font-size:14px;" title="Eliminar">✕</button>
+            </div>
+            <div id="mat-input-wrap" style="display:flex;gap:7px;">
+              <input placeholder="Agregar material o repuesto..." style="flex:1;border:0.5px solid #ddd;border-radius:8px;padding:9px 13px;font-size:12px;color:#333;outline:none;" />
+              <button style="background:#833AE0;color:#fff;border:none;border-radius:8px;padding:9px 16px;font-size:12px;font-weight:600;cursor:pointer;">Agregar</button>
+            </div>
+          </div>
+
+          <!-- ── OBSERVACIONES ── -->
+          <div id="sec-obs">
+            <div style="display:flex;align-items:center;gap:7px;margin-bottom:10px;">
+              <i class="ti ti-notes" style="color:#833AE0;font-size:14px;"></i>
+              <span style="font-size:10px;font-weight:700;color:#aaa;text-transform:uppercase;letter-spacing:.08em;">Observaciones del técnico</span>
+            </div>
+            <div id="obs-readonly" style="background:#f9f9fb;border-radius:9px;padding:12px 14px;font-size:12px;color:#444;line-height:1.6;">Correa muy desgastada. Rodamientos suenan anormalmente. Pendiente cotizar ambas piezas.</div>
+            <textarea id="obs-edit" style="display:none;width:100%;background:#f9f9fb;border:1.5px solid #833AE0;border-radius:9px;padding:12px 14px;font-size:12px;color:#444;line-height:1.6;resize:none;height:80px;box-sizing:border-box;">Correa muy desgastada. Rodamientos suenan anormalmente. Pendiente cotizar ambas piezas.</textarea>
+          </div>
+
+          <!-- ── FIRMAS ── -->
+          <div id="sec-firmas">
+            <div style="display:flex;align-items:center;gap:7px;margin-bottom:12px;">
+              <i class="ti ti-signature" style="color:#833AE0;font-size:14px;"></i>
+              <span style="font-size:10px;font-weight:700;color:#aaa;text-transform:uppercase;letter-spacing:.08em;">Firmas de conformidad</span>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+              <div>
+                <div style="font-size:10px;color:#888;margin-bottom:5px;">Técnico responsable</div>
+                <div class="firma-slot"><i class="ti ti-pencil" style="font-size:20px;color:#ccc;"></i><span style="font-size:10px;color:#ccc;margin-top:4px;">Firmar aquí</span></div>
+              </div>
+              <div>
+                <div style="font-size:10px;color:#888;margin-bottom:5px;">Firma del cliente</div>
+                <div class="firma-slot"><i class="ti ti-user" style="font-size:20px;color:#ccc;"></i><span style="font-size:10px;color:#ccc;margin-top:4px;">Firmar aquí</span></div>
+              </div>
+            </div>
+          </div>
+
+        </div><!-- /body scroll -->
+
+        <!-- FOOTER ACCIONES -->
+        <div id="panel-footer" style="padding:14px 20px;border-top:0.5px solid #f0f0f0;background:#fff;flex-shrink:0;position:sticky;bottom:0;">
+          <!-- Vista SUPERVISOR -->
+          <div id="footer-supervisor" style="display:flex;gap:8px;">
+            <button style="flex:1;padding:10px;border-radius:9px;border:0.5px solid #ddd;background:#fff;font-size:12px;font-weight:600;color:#555;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:5px;"><i class="ti ti-edit" style="font-size:13px;"></i> Editar OT</button>
+            <button onclick="showModalBloqueo()" style="flex:1;padding:10px;border-radius:9px;border:1.5px solid #c0392b;background:#fff;font-size:12px;font-weight:600;color:#c0392b;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:5px;"><i class="ti ti-lock" style="font-size:13px;"></i> Registrar bloqueo</button>
+            <button style="flex:1;padding:10px;border-radius:9px;border:none;background:#833AE0;font-size:12px;font-weight:600;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:5px;"><i class="ti ti-circle-check" style="font-size:13px;"></i> Forzar cierre</button>
+          </div>
+          <!-- Vista TALLER -->
+          <div id="footer-taller" style="display:none;gap:8px;">
+            <button onclick="showModalBloqueo()" style="flex:1;padding:10px;border-radius:9px;border:1.5px solid #c0392b;background:#fff5f5;font-size:12px;font-weight:600;color:#c0392b;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:5px;"><i class="ti ti-alert-circle" style="font-size:13px;"></i> No se puede cerrar</button>
+            <button onclick="showModalCierre()" style="flex:1;padding:10px;border-radius:9px;border:none;background:#16a34a;font-size:12px;font-weight:600;color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:5px;"><i class="ti ti-circle-check" style="font-size:13px;"></i> Cerrar OT ✓</button>
+          </div>
+        </div>
+
+      </div><!-- /ot-panel -->
+    </div><!-- /ot-overlay -->
+
+    <!-- MODAL: NO SE PUEDE CERRAR (bloqueo) -->
+    <div id="modal-bloqueo" style="display:none;position:fixed;inset:0;z-index:300;background:rgba(20,20,40,0.5);align-items:center;justify-content:center;">
+      <div style="width:420px;background:#fff;border-radius:14px;padding:24px;box-shadow:0 8px 40px rgba(0,0,0,0.18);">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;">
+          <div style="width:36px;height:36px;border-radius:9px;background:#fff0f0;display:flex;align-items:center;justify-content:center;"><i class="ti ti-alert-circle" style="color:#c0392b;font-size:18px;"></i></div>
+          <div><div style="font-size:15px;font-weight:700;color:#1a1a2e;">¿Por qué no se puede cerrar?</div><div style="font-size:11px;color:#aaa;">WO-2451 · Reparación lavadora LG</div></div>
+        </div>
+        <div style="font-size:11px;color:#888;margin:14px 0 10px;">Selecciona el motivo del bloqueo:</div>
+        <div id="bloqueo-opts" style="display:flex;flex-direction:column;gap:7px;">
+          <label class="bloqueo-opt"><input type="radio" name="bloqueo" value="repuesto"> <span>🔩 Falta repuesto o pieza</span></label>
+          <label class="bloqueo-opt"><input type="radio" name="bloqueo" value="cliente"> <span>👤 Cliente no disponible / no autoriza</span></label>
+          <label class="bloqueo-opt"><input type="radio" name="bloqueo" value="visita"> <span>📅 Requiere segunda visita</span></label>
+          <label class="bloqueo-opt"><input type="radio" name="bloqueo" value="aprobacion"> <span>📋 Requiere aprobación de presupuesto</span></label>
+          <label class="bloqueo-opt"><input type="radio" name="bloqueo" value="garantia"> <span>🛡 Derivada a garantía</span></label>
+          <label class="bloqueo-opt"><input type="radio" name="bloqueo" value="otro"> <span>📝 Otro motivo</span></label>
+        </div>
+        <textarea id="bloqueo-nota" placeholder="Observaciones adicionales (opcional)..." style="width:100%;margin-top:10px;border:0.5px solid #ddd;border-radius:8px;padding:10px 12px;font-size:12px;color:#444;resize:none;height:64px;box-sizing:border-box;outline:none;"></textarea>
+        <div style="display:flex;gap:8px;margin-top:14px;">
+          <button onclick="closeModalBloqueo()" style="flex:1;padding:10px;border-radius:8px;border:0.5px solid #ddd;background:#fff;font-size:12px;font-weight:600;color:#555;cursor:pointer;">Cancelar</button>
+          <button onclick="confirmarBloqueo()" style="flex:1;padding:10px;border-radius:8px;border:none;background:#c0392b;font-size:12px;font-weight:600;color:#fff;cursor:pointer;">Registrar bloqueo</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL: CERRAR OT -->
+    <div id="modal-cierre" style="display:none;position:fixed;inset:0;z-index:300;background:rgba(20,20,40,0.5);align-items:center;justify-content:center;">
+      <div style="width:420px;background:#fff;border-radius:14px;padding:24px;box-shadow:0 8px 40px rgba(0,0,0,0.18);">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:6px;">
+          <div style="width:36px;height:36px;border-radius:9px;background:#e6f9f0;display:flex;align-items:center;justify-content:center;"><i class="ti ti-circle-check" style="color:#16a34a;font-size:18px;"></i></div>
+          <div><div style="font-size:15px;font-weight:700;color:#1a1a2e;">Confirmar cierre de OT</div><div style="font-size:11px;color:#aaa;">WO-2451 · Reparación lavadora LG</div></div>
+        </div>
+        <div style="background:#f9f9fb;border-radius:9px;padding:12px;margin:14px 0;font-size:11px;color:#666;display:flex;flex-direction:column;gap:5px;">
+          <div style="display:flex;justify-content:space-between;"><span style="color:#aaa;">Checklist</span><span id="cierre-chk" style="font-weight:600;color:#1a1a2e;">2/8 completados</span></div>
+          <div style="display:flex;justify-content:space-between;"><span style="color:#aaa;">Evidencia</span><span style="font-weight:600;color:#c27b00;">Sin fotos subidas</span></div>
+          <div style="display:flex;justify-content:space-between;"><span style="color:#aaa;">Firmas</span><span style="font-weight:600;color:#c27b00;">Pendientes</span></div>
+        </div>
+        <div style="background:#fff4e0;border-radius:8px;padding:10px 12px;font-size:11px;color:#c27b00;margin-bottom:14px;display:flex;align-items:flex-start;gap:7px;"><i class="ti ti-alert-triangle" style="font-size:13px;flex-shrink:0;margin-top:1px;"></i> Hay items incompletos. Puedes cerrar igual, pero quedará registro de la advertencia.</div>
+        <textarea placeholder="Nota de cierre (opcional)..." style="width:100%;border:0.5px solid #ddd;border-radius:8px;padding:10px 12px;font-size:12px;color:#444;resize:none;height:64px;box-sizing:border-box;outline:none;"></textarea>
+        <div style="display:flex;gap:8px;margin-top:14px;">
+          <button onclick="closeModalCierre()" style="flex:1;padding:10px;border-radius:8px;border:0.5px solid #ddd;background:#fff;font-size:12px;font-weight:600;color:#555;cursor:pointer;">Cancelar</button>
+          <button onclick="confirmarCierre()" style="flex:1;padding:10px;border-radius:8px;border:none;background:#16a34a;font-size:12px;font-weight:600;color:#fff;cursor:pointer;">Confirmar cierre ✓</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════ SCREEN: ASISTENTE IA ══════ -->
+    <div class="screen" id="screen-ia">
+
+      <!-- SIDEBAR SUGERENCIAS -->
+      <div class="ia-suggestions">
+        <div class="ia-sug-label">Sugerencias rápidas</div>
+        <div class="ia-sug-card" onclick="sendSuggestion('troubleshooting')">
+          <div class="ia-sug-icon"><i class="ti ti-tool"></i></div>
+          <div class="ia-sug-title">Troubleshooting</div>
+          <div class="ia-sug-sub">Diagnóstico de problemas técnicos</div>
+        </div>
+        <div class="ia-sug-card" onclick="sendSuggestion('base')">
+          <div class="ia-sug-icon"><i class="ti ti-book"></i></div>
+          <div class="ia-sug-title">Base de conocimientos</div>
+          <div class="ia-sug-sub">Manuales y guías técnicas</div>
+        </div>
+        <div class="ia-sug-card" onclick="sendSuggestion('procedimientos')">
+          <div class="ia-sug-icon"><i class="ti ti-list-check"></i></div>
+          <div class="ia-sug-title">Procedimientos</div>
+          <div class="ia-sug-sub">Pasos para servicios específicos</div>
+        </div>
+        <div class="ia-sug-card" onclick="sendSuggestion('practicas')">
+          <div class="ia-sug-icon"><i class="ti ti-bulb"></i></div>
+          <div class="ia-sug-title">Mejores prácticas</div>
+          <div class="ia-sug-sub">Recomendaciones y tips técnicos</div>
+        </div>
+      </div>
+
+      <!-- CHAT -->
+      <div class="ia-chat">
+
+        <!-- Header del asistente -->
+        <div class="ia-chat-header">
+          <div class="ia-avatar"><i class="ti ti-sparkles"></i></div>
+          <div>
+            <div style="font-size:13px;font-weight:700;color:#1a1a2e;">Asistente IA — HenkanCX</div>
+            <div class="ia-status">En línea · Ayuda técnica en tiempo real</div>
+          </div>
+        </div>
+
+        <!-- Mensajes -->
+        <div class="ia-messages" id="ia-messages">
+          <!-- Mensaje inicial del bot -->
+          <div class="ia-msg">
+            <div class="ia-msg-av bot"><i class="ti ti-sparkles"></i></div>
+            <div>
+              <div class="ia-bubble bot">¡Hola! Soy el Asistente IA de <strong>HenkanCX</strong>. Estoy aquí para ayudarte con diagnósticos técnicos, procedimientos de servicio para electrodomésticos y acceso a la base de conocimientos. ¿En qué puedo asistirte hoy?</div>
+              <div class="ia-msg-time">Ahora</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Input -->
+        <div class="ia-input-area">
+          <input class="ia-input" id="ia-input" placeholder="Escribe tu consulta técnica..." onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendIA();}"/>
+          <button class="ia-send" onclick="sendIA()"><i class="ti ti-send"></i></button>
+        </div>
+
+      </div>
+    </div><!-- /screen-ia -->
+
+    <!-- ══════ SCREEN: AGENDA ══════ -->
+    <div class="screen" id="screen-agenda" style="padding:0;gap:0;flex-direction:column;">
+
+      <!-- LEYENDA -->
+      <div class="agenda-legend">
+        <div class="leg-item"><div class="leg-dot" style="background:#f5c0b0;border-left:3px solid #c0392b;"></div> Reparación</div>
+        <div class="leg-item"><div class="leg-dot" style="background:#c7d7fd;border-left:3px solid #2563eb;"></div> Mantenimiento</div>
+        <div class="leg-item"><div class="leg-dot" style="background:#bbf0d8;border-left:3px solid #16a34a;"></div> Instalación</div>
+        <div class="leg-item"><div class="leg-dot" style="background:#ffd5d5;border-left:3px solid #c0392b;border-style:dashed;"></div> Bloqueada</div>
+        <div style="margin-left:auto;display:flex;gap:8px;">
+          <span style="font-size:10px;color:#aaa;display:flex;align-items:center;gap:4px;"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#16a34a;"></span> Disponible</span>
+          <span style="font-size:10px;color:#aaa;display:flex;align-items:center;gap:4px;"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#f59e0b;"></span> Ocupado</span>
+          <span style="font-size:10px;color:#aaa;display:flex;align-items:center;gap:4px;"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:#c0392b;"></span> Al tope</span>
+        </div>
+      </div>
+
+      <div class="agenda-layout">
+
+        <!-- SIDEBAR RECURSOS -->
+        <div class="agenda-sidebar">
+          <div class="agenda-sidebar-hdr"><span>Recursos</span><span style="color:#833AE0;cursor:pointer;font-size:10px;">Ver todos</span></div>
+
+          <!-- TÉCNICOS INTERNOS -->
+          <div class="agenda-group-label"><i class="ti ti-user-check" style="font-size:12px;"></i> Técnicos internos</div>
+          <div class="agenda-resource selected" onclick="filterAgenda('LM',this)">
+            <div class="res-av" style="background:#16a34a;">LM</div>
+            <div><div class="res-name">Luis Mora</div><div class="res-sub">Zona Norte · Sector A</div></div>
+            <span class="res-badge rb-disp">3/5</span>
+          </div>
+          <div class="agenda-resource" onclick="filterAgenda('CR',this)">
+            <div class="res-av" style="background:#833AE0;">CR</div>
+            <div><div class="res-name">Carlos Ruiz</div><div class="res-sub">Zona Norte · Sector B</div></div>
+            <span class="res-badge rb-ocup">4/5</span>
+          </div>
+          <div class="agenda-resource" onclick="filterAgenda('DP',this)">
+            <div class="res-av" style="background:#0891b2;">DP</div>
+            <div><div class="res-name">Diego Pérez</div><div class="res-sub">Zona Central · Sector C</div></div>
+            <span class="res-badge rb-ocup">4/5</span>
+          </div>
+          <div class="agenda-resource" onclick="filterAgenda('MC',this)">
+            <div class="res-av" style="background:#d97706;">MC</div>
+            <div><div class="res-name">María Castro</div><div class="res-sub">Zona Central · Sector D</div></div>
+            <span class="res-badge rb-disp">2/5</span>
+          </div>
+          <div class="agenda-resource" onclick="filterAgenda('AL',this)">
+            <div class="res-av" style="background:#2563eb;">AL</div>
+            <div><div class="res-name">Ana López</div><div class="res-sub">Zona Sur · Sector E</div></div>
+            <span class="res-badge rb-full">5/5</span>
+          </div>
+
+          <!-- TALLER: TECNOSERV -->
+          <div class="agenda-group-label" style="margin-top:4px;"><i class="ti ti-building-store" style="font-size:12px;"></i> Tecnoserv Panamá</div>
+          <div class="agenda-resource" onclick="filterAgenda('RV',this)">
+            <div class="res-av" style="background:#6366f1;">RV</div>
+            <div><div class="res-name">Roberto Vargas</div><div class="res-sub">Zona Norte</div></div>
+            <span class="res-badge rb-disp">2/4</span>
+          </div>
+          <div class="agenda-resource" onclick="filterAgenda('JP',this)">
+            <div class="res-av" style="background:#06b6d4;">JP</div>
+            <div><div class="res-name">Jorge Pacheco</div><div class="res-sub">Zona Norte</div></div>
+            <span class="res-badge rb-ocup">3/4</span>
+          </div>
+          <div class="agenda-resource" onclick="filterAgenda('FM',this)">
+            <div class="res-av" style="background:#8b5cf6;">FM</div>
+            <div><div class="res-name">Felipe Montoya</div><div class="res-sub">Zona Norte</div></div>
+            <span class="res-badge rb-disp">1/4</span>
+          </div>
+
+          <!-- TALLER: FRÍO TOTAL -->
+          <div class="agenda-group-label" style="margin-top:4px;"><i class="ti ti-building-store" style="font-size:12px;"></i> Frío Total S.A.</div>
+          <div class="agenda-resource" onclick="filterAgenda('MA',this)">
+            <div class="res-av" style="background:#ec4899;">MA</div>
+            <div><div class="res-name">Miguel Arias</div><div class="res-sub">Zona Central</div></div>
+            <span class="res-badge rb-ocup">4/5</span>
+          </div>
+          <div class="agenda-resource" onclick="filterAgenda('SQ',this)">
+            <div class="res-av" style="background:#14b8a6;">SQ</div>
+            <div><div class="res-name">Santiago Quiroz</div><div class="res-sub">Zona Central</div></div>
+            <span class="res-badge rb-full">5/5</span>
+          </div>
+          <div class="agenda-resource" onclick="filterAgenda('ER',this)">
+            <div class="res-av" style="background:#f43f5e;">ER</div>
+            <div><div class="res-name">Ernesto Reyes</div><div class="res-sub">Zona Central</div></div>
+            <span class="res-badge rb-disp">2/5</span>
+          </div>
+
+          <!-- TALLER: ELECTROFIX — en revisión -->
+          <div class="agenda-group-label" style="margin-top:4px;background:#fff8f8;border-color:#f5d0d0;"><i class="ti ti-alert-triangle" style="font-size:12px;color:#c0392b;"></i> <span style="color:#c0392b;">ElectroFix Panamá</span> <span style="font-size:8px;background:#fff0f0;color:#c0392b;padding:1px 5px;border-radius:4px;margin-left:2px;">En revisión</span></div>
+          <div class="agenda-resource" onclick="filterAgenda('NB',this)" style="opacity:.6;">
+            <div class="res-av" style="background:#dc2626;">NB</div>
+            <div><div class="res-name">Nelson Barrios</div><div class="res-sub">Zona Sur</div></div>
+            <span class="res-badge rb-ocup">2/3</span>
+          </div>
+          <div class="agenda-resource" onclick="filterAgenda('HL',this)" style="opacity:.6;">
+            <div class="res-av" style="background:#b91c1c;">HL</div>
+            <div><div class="res-name">Héctor Lara</div><div class="res-sub">Zona Sur</div></div>
+            <span class="res-badge rb-disp">1/3</span>
+          </div>
+        </div>
+
+        <!-- GRID SEMANAL -->
+        <div class="agenda-grid-wrap">
+          <div class="agenda-grid">
+
+            <!-- HEADERS días -->
+            <div class="agenda-day-hdr"><div class="agenda-day-name">Lun</div><div class="agenda-day-num">16</div></div>
+            <div class="agenda-day-hdr"><div class="agenda-day-name">Mar</div><div class="agenda-day-num">17</div></div>
+            <div class="agenda-day-hdr today"><div class="agenda-day-name">Mié</div><div class="agenda-day-num">18</div></div>
+            <div class="agenda-day-hdr"><div class="agenda-day-name">Jue</div><div class="agenda-day-num">19</div></div>
+            <div class="agenda-day-hdr"><div class="agenda-day-name">Vie</div><div class="agenda-day-num">20</div></div>
+            <div class="agenda-day-hdr weekend"><div class="agenda-day-name">Sáb</div><div class="agenda-day-num">21</div></div>
+            <div class="agenda-day-hdr weekend"><div class="agenda-day-name">Dom</div><div class="agenda-day-num">22</div></div>
+
+            <!-- LUNES 16 -->
+            <div class="agenda-cell">
+              <div class="agenda-ot aot-rep" onclick="openOT()">
+                <div class="aot-id">WO-2451</div>
+                <div class="aot-title">Reparación lavadora LG</div>
+                <div class="aot-time"><i class="ti ti-clock" style="font-size:9px"></i> 08:00 – 10:00</div>
+                <div class="aot-tec"><div class="aot-av" style="background:#833AE0">CR</div><span class="aot-tec-name">Carlos Ruiz</span></div>
+              </div>
+              <div class="agenda-ot aot-mant">
+                <div class="aot-id">WO-2446</div>
+                <div class="aot-title">Mantenimiento preventivo</div>
+                <div class="aot-time"><i class="ti ti-clock" style="font-size:9px"></i> 10:30 – 12:00</div>
+                <div class="aot-tec"><div class="aot-av" style="background:#06b6d4">JP</div><span class="aot-tec-name">Jorge Pacheco</span></div>
+              </div>
+              <div class="agenda-ot aot-inst">
+                <div class="aot-id">WO-2449</div>
+                <div class="aot-title">Instalación refrigeradora</div>
+                <div class="aot-time"><i class="ti ti-clock" style="font-size:9px"></i> 14:00 – 16:30</div>
+                <div class="aot-tec"><div class="aot-av" style="background:#6366f1">RV</div><span class="aot-tec-name">Roberto Vargas</span></div>
+              </div>
+            </div>
+
+            <!-- MARTES 17 -->
+            <div class="agenda-cell">
+              <div class="agenda-ot aot-mant">
+                <div class="aot-id">WO-2450</div>
+                <div class="aot-title">Mantenimiento A/C</div>
+                <div class="aot-time"><i class="ti ti-clock" style="font-size:9px"></i> 09:00 – 11:30</div>
+                <div class="aot-tec"><div class="aot-av" style="background:#2563eb">AL</div><span class="aot-tec-name">Ana López</span></div>
+              </div>
+              <div class="agenda-ot aot-rep">
+                <div class="aot-id">WO-2445</div>
+                <div class="aot-title">Falla compresor A/C</div>
+                <div class="aot-time"><i class="ti ti-clock" style="font-size:9px"></i> 13:00 – 15:00</div>
+                <div class="aot-tec"><div class="aot-av" style="background:#ec4899">MA</div><span class="aot-tec-name">Miguel Arias</span></div>
+              </div>
+              <div class="agenda-ot aot-rep">
+                <div class="aot-id">WO-2444</div>
+                <div class="aot-title">Reparación secadora</div>
+                <div class="aot-time"><i class="ti ti-clock" style="font-size:9px"></i> 15:30 – 17:00</div>
+                <div class="aot-tec"><div class="aot-av" style="background:#16a34a">LM</div><span class="aot-tec-name">Luis Mora</span></div>
+              </div>
+            </div>
+
+            <!-- MIÉRCOLES 18 (HOY) -->
+            <div class="agenda-cell today">
+              <div class="agenda-ot aot-bloq" onclick="openOT()">
+                <div class="aot-id" style="color:#c0392b">WO-2451 ⚠</div>
+                <div class="aot-title">Rep. lavadora LG</div>
+                <div class="aot-time" style="color:#c0392b;"><i class="ti ti-lock" style="font-size:9px"></i> Esp. repuesto</div>
+                <div class="aot-tec"><div class="aot-av" style="background:#833AE0">CR</div><span class="aot-tec-name">Carlos Ruiz</span></div>
+              </div>
+              <div class="agenda-ot aot-rep">
+                <div class="aot-id">WO-2448</div>
+                <div class="aot-title">Falla horno eléctrico</div>
+                <div class="aot-time"><i class="ti ti-clock" style="font-size:9px"></i> 10:00 – 12:00</div>
+                <div class="aot-tec"><div class="aot-av" style="background:#d97706">MC</div><span class="aot-tec-name">María Castro</span></div>
+              </div>
+              <div class="agenda-ot aot-mant">
+                <div class="aot-id">WO-2443</div>
+                <div class="aot-title">Mant. refrigeración</div>
+                <div class="aot-time"><i class="ti ti-clock" style="font-size:9px"></i> 14:00 – 16:00</div>
+                <div class="aot-tec"><div class="aot-av" style="background:#8b5cf6">FM</div><span class="aot-tec-name">Felipe Montoya</span></div>
+              </div>
+              <div class="agenda-ot aot-inst">
+                <div class="aot-id">WO-2442</div>
+                <div class="aot-title">Instalación A/C split</div>
+                <div class="aot-time"><i class="ti ti-clock" style="font-size:9px"></i> 16:30 – 18:00</div>
+                <div class="aot-tec"><div class="aot-av" style="background:#14b8a6">SQ</div><span class="aot-tec-name">Santiago Quiroz</span></div>
+              </div>
+            </div>
+
+            <!-- JUEVES 19 -->
+            <div class="agenda-cell">
+              <div class="agenda-ot aot-rep">
+                <div class="aot-id">WO-2447</div>
+                <div class="aot-title">Rep. A/C central</div>
+                <div class="aot-time"><i class="ti ti-clock" style="font-size:9px"></i> 08:30 – 11:00</div>
+                <div class="aot-tec"><div class="aot-av" style="background:#ec4899">MA</div><span class="aot-tec-name">Miguel Arias</span></div>
+              </div>
+              <div class="agenda-ot aot-mant">
+                <div class="aot-id">WO-2441</div>
+                <div class="aot-title">Mant. lavadora Samsung</div>
+                <div class="aot-time"><i class="ti ti-clock" style="font-size:9px"></i> 11:30 – 13:00</div>
+                <div class="aot-tec"><div class="aot-av" style="background:#0891b2">DP</div><span class="aot-tec-name">Diego Pérez</span></div>
+              </div>
+              <div class="agenda-ot aot-inst">
+                <div class="aot-id">WO-2440</div>
+                <div class="aot-title">Instalación calentador</div>
+                <div class="aot-time"><i class="ti ti-clock" style="font-size:9px"></i> 14:00 – 16:00</div>
+                <div class="aot-tec"><div class="aot-av" style="background:#6366f1">RV</div><span class="aot-tec-name">Roberto Vargas</span></div>
+              </div>
+            </div>
+
+            <!-- VIERNES 20 -->
+            <div class="agenda-cell">
+              <div class="agenda-ot aot-rep">
+                <div class="aot-id">WO-2439</div>
+                <div class="aot-title">Rep. horno industrial</div>
+                <div class="aot-time"><i class="ti ti-clock" style="font-size:9px"></i> 09:00 – 11:30</div>
+                <div class="aot-tec"><div class="aot-av" style="background:#16a34a">LM</div><span class="aot-tec-name">Luis Mora</span></div>
+              </div>
+              <div class="agenda-ot aot-mant">
+                <div class="aot-id">WO-2438</div>
+                <div class="aot-title">Mant. A/C comercial</div>
+                <div class="aot-time"><i class="ti ti-clock" style="font-size:9px"></i> 13:00 – 15:00</div>
+                <div class="aot-tec"><div class="aot-av" style="background:#f43f5e">ER</div><span class="aot-tec-name">Ernesto Reyes</span></div>
+              </div>
+            </div>
+
+            <!-- SÁBADO 21 -->
+            <div class="agenda-cell weekend">
+              <div class="agenda-ot aot-rep">
+                <div class="aot-id">WO-2437</div>
+                <div class="aot-title">Rep. urgente nevera</div>
+                <div class="aot-time"><i class="ti ti-clock" style="font-size:9px"></i> 09:00 – 11:00</div>
+                <div class="aot-tec"><div class="aot-av" style="background:#2563eb">AL</div><span class="aot-tec-name">Ana López</span></div>
+              </div>
+              <div class="agenda-empty">Sin más OTs</div>
+            </div>
+
+            <!-- DOMINGO 22 -->
+            <div class="agenda-cell weekend">
+              <div class="agenda-empty">Sin OTs programadas</div>
+            </div>
+
+          </div><!-- /agenda-grid -->
+        </div><!-- /agenda-grid-wrap -->
+      </div><!-- /agenda-layout -->
+    </div><!-- /screen-agenda -->
+
+    <!-- ══════ SCREEN: ANALYTICS ══════ -->
+    <div class="screen" id="screen-analytics">
+
+      <!-- TAB 1: RESUMEN -->
+      <div class="tab-content active" id="tab-resumen">
+        <div class="kpi-strip c5">
+          <div class="kcard"><div class="kcard-label">OTs creadas</div><div class="kcard-val">244</div><div class="kcard-sub">+11% vs mes ant.</div></div>
+          <div class="kcard"><div class="kcard-label">OTs cerradas</div><div class="kcard-val ok">227</div><div class="kcard-sub ok">+8% vs mes ant.</div></div>
+          <div class="kcard"><div class="kcard-label">Aging promedio</div><div class="kcard-val warn">4.7d</div><div class="kcard-sub warn">▲ +0.8d vs mes ant.</div></div>
+          <div class="kcard"><div class="kcard-label">SLA cumplido</div><div class="kcard-val warn">82%</div><div class="kcard-sub warn">meta: 90%</div></div>
+          <div class="kcard"><div class="kcard-label">NPS post-servicio</div><div class="kcard-val ok">+54</div><div class="kcard-sub ok">▲ +6 pts vs mes ant.</div></div>
+        </div>
+        <div class="row2">
+          <div class="panel">
+            <div class="panel-header"><div class="panel-title"><i class="ti ti-chart-bar"></i> OTs cerradas por semana</div><div class="panel-sub">Últimas 8 semanas</div></div>
+            <div class="bar-chart-a">
+              <div class="bar-col"><div class="bv">41</div><div class="bar" style="height:42px;background:#e0d4f7"></div><div class="bl">S1</div></div>
+              <div class="bar-col"><div class="bv">38</div><div class="bar" style="height:39px;background:#e0d4f7"></div><div class="bl">S2</div></div>
+              <div class="bar-col"><div class="bv">45</div><div class="bar" style="height:46px;background:#e0d4f7"></div><div class="bl">S3</div></div>
+              <div class="bar-col"><div class="bv">52</div><div class="bar" style="height:53px;background:#c9a8f5"></div><div class="bl">S4</div></div>
+              <div class="bar-col"><div class="bv">49</div><div class="bar" style="height:50px;background:#c9a8f5"></div><div class="bl">S5</div></div>
+              <div class="bar-col"><div class="bv">58</div><div class="bar" style="height:59px;background:#a87af0"></div><div class="bl">S6</div></div>
+              <div class="bar-col"><div class="bv">61</div><div class="bar" style="height:62px;background:#a87af0"></div><div class="bl">S7</div></div>
+              <div class="bar-col"><div class="bv" style="color:#833AE0;font-weight:700">67</div><div class="bar" style="height:68px;background:#833AE0"></div><div class="bl" style="color:#833AE0;font-weight:600">S8</div></div>
+            </div>
+            <div class="chart-footer-a">
+              <div><div class="cf-lbl">Promedio semanal</div><div class="cf-val">51.4</div></div>
+              <div><div class="cf-lbl">Mejor semana</div><div class="cf-val" style="color:#833AE0">67 (S8)</div></div>
+              <div><div class="cf-lbl">Tendencia</div><div class="cf-val" style="color:#16a34a">↑ +63%</div></div>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="panel-header"><div class="panel-title"><i class="ti ti-lock-exclamation"></i> Días perdidos por bloqueo</div></div>
+            <div class="bloqueo-row"><div class="bl-icon red"><i class="ti ti-tool"></i></div><div class="bl-label">Espera repuesto</div><div class="bl-bar-wrap"><div class="bl-bar-fill" style="width:100%;background:#e24b4a"></div></div><div class="bl-days" style="color:#c0392b">4.2d</div></div>
+            <div class="bloqueo-row"><div class="bl-icon gray"><i class="ti ti-building-store"></i></div><div class="bl-label">Espera taller</div><div class="bl-bar-wrap"><div class="bl-bar-fill" style="width:76%;background:#f59e0b"></div></div><div class="bl-days" style="color:#c27b00">3.2d</div></div>
+            <div class="bloqueo-row"><div class="bl-icon amber"><i class="ti ti-user-x"></i></div><div class="bl-label">Espera cliente</div><div class="bl-bar-wrap"><div class="bl-bar-fill" style="width:64%;background:#f59e0b"></div></div><div class="bl-days" style="color:#c27b00">2.7d</div></div>
+            <div class="bloqueo-row"><div class="bl-icon blue"><i class="ti ti-file-invoice"></i></div><div class="bl-label">Espera aprobación</div><div class="bl-bar-wrap"><div class="bl-bar-fill" style="width:48%;background:#2563eb"></div></div><div class="bl-days" style="color:#2563eb">2.0d</div></div>
+            <div style="margin-top:12px;padding-top:10px;border-top:0.5px solid #f5f5f5"><div style="font-size:10px;color:#aaa;margin-bottom:3px">Total días perdidos este mes</div><div style="display:flex;align-items:baseline;gap:6px"><span style="font-size:22px;font-weight:700;color:#c0392b">312</span><span style="font-size:11px;color:#aaa">días en 7 OTs bloqueadas</span></div></div>
+          </div>
+        </div>
+        <div class="row2">
+          <div class="panel">
+            <div class="panel-header"><div class="panel-title"><i class="ti ti-chart-pie"></i> Distribución por tipo de servicio</div></div>
+            <div class="aging-row"><div class="aging-label">Reparación</div><div class="aging-bar-wrap"><div class="aging-bar-fill" style="width:52%;background:#833AE0"></div></div><div class="aging-val" style="color:#833AE0">52% · 127</div></div>
+            <div class="aging-row"><div class="aging-label">Mantenimiento</div><div class="aging-bar-wrap"><div class="aging-bar-fill" style="width:28%;background:#2563eb"></div></div><div class="aging-val" style="color:#2563eb">28% · 68</div></div>
+            <div class="aging-row"><div class="aging-label">Instalación</div><div class="aging-bar-wrap"><div class="aging-bar-fill" style="width:13%;background:#16a34a"></div></div><div class="aging-val" style="color:#16a34a">13% · 32</div></div>
+            <div class="aging-row"><div class="aging-label">Garantía</div><div class="aging-bar-wrap"><div class="aging-bar-fill" style="width:7%;background:#c27b00"></div></div><div class="aging-val" style="color:#c27b00">7% · 17</div></div>
+          </div>
+          <div class="panel">
+            <div class="panel-header"><div class="panel-title"><i class="ti ti-users"></i> OTs por técnico este mes</div></div>
+            <div class="aging-row"><div class="aging-label">Luis Mora</div><div class="aging-bar-wrap"><div class="aging-bar-fill" style="width:100%;background:#833AE0"></div></div><div class="aging-val" style="color:#833AE0">48</div></div>
+            <div class="aging-row"><div class="aging-label">Carlos Ruiz</div><div class="aging-bar-wrap"><div class="aging-bar-fill" style="width:90%;background:#833AE0"></div></div><div class="aging-val" style="color:#833AE0">43</div></div>
+            <div class="aging-row"><div class="aging-label">Diego Pérez</div><div class="aging-bar-wrap"><div class="aging-bar-fill" style="width:77%;background:#c9a8f5"></div></div><div class="aging-val" style="color:#6b4fc4">37</div></div>
+            <div class="aging-row"><div class="aging-label">María Castro</div><div class="aging-bar-wrap"><div class="aging-bar-fill" style="width:65%;background:#c9a8f5"></div></div><div class="aging-val" style="color:#6b4fc4">31</div></div>
+            <div class="aging-row"><div class="aging-label">Ana López</div><div class="aging-bar-wrap"><div class="aging-bar-fill" style="width:58%;background:#e0d4f7"></div></div><div class="aging-val neutral">28</div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 2: SLA Y AGING -->
+      <div class="tab-content" id="tab-sla">
+        <div class="kpi-strip c4">
+          <div class="kcard"><div class="kcard-label">SLA cumplido</div><div class="kcard-val warn">82%</div><div class="kcard-sub warn">meta: 90% — déficit 8pts</div></div>
+          <div class="kcard"><div class="kcard-label">OTs fuera de SLA</div><div class="kcard-val danger">5</div><div class="kcard-sub danger">3 críticas · 2 en alerta</div></div>
+          <div class="kcard"><div class="kcard-label">Aging promedio</div><div class="kcard-val warn">4.7d</div><div class="kcard-sub warn">▲ +0.8d vs mes ant.</div></div>
+          <div class="kcard"><div class="kcard-label">Estado más lento</div><div class="kcard-val danger">4.2d</div><div class="kcard-sub danger">Espera repuesto</div></div>
+        </div>
+        <div class="row2">
+          <div class="panel">
+            <div class="panel-header"><div class="panel-title"><i class="ti ti-hourglass"></i> Aging promedio por estado</div></div>
+            <div class="aging-row"><div class="aging-label">Pendiente de asignación</div><div class="aging-bar-wrap"><div class="aging-bar-fill" style="width:18%;background:#16a34a"></div></div><div class="aging-val ok">0.9d</div></div>
+            <div class="aging-row"><div class="aging-label">Asignada / Agendada</div><div class="aging-bar-wrap"><div class="aging-bar-fill" style="width:30%;background:#16a34a"></div></div><div class="aging-val ok">1.5d</div></div>
+            <div class="aging-row"><div class="aging-label">En diagnóstico</div><div class="aging-bar-wrap"><div class="aging-bar-fill" style="width:22%;background:#f59e0b"></div></div><div class="aging-val warn">1.1d</div></div>
+            <div class="aging-row"><div class="aging-label" style="color:#c0392b;font-weight:500">Esp. repuesto 🔴</div><div class="aging-bar-wrap"><div class="aging-bar-fill" style="width:85%;background:#e24b4a"></div></div><div class="aging-val danger">4.2d</div></div>
+            <div class="aging-row"><div class="aging-label" style="color:#c0392b;font-weight:500">Esp. taller 🔴</div><div class="aging-bar-wrap"><div class="aging-bar-fill" style="width:64%;background:#e24b4a"></div></div><div class="aging-val danger">3.2d</div></div>
+            <div class="aging-row"><div class="aging-label" style="color:#c0392b;font-weight:500">Esp. cliente 🔴</div><div class="aging-bar-wrap"><div class="aging-bar-fill" style="width:54%;background:#f59e0b"></div></div><div class="aging-val warn">2.7d</div></div>
+            <div class="aging-row"><div class="aging-label" style="color:#c27b00;font-weight:500">Esp. aprobación 🔴</div><div class="aging-bar-wrap"><div class="aging-bar-fill" style="width:40%;background:#f59e0b"></div></div><div class="aging-val warn">2.0d</div></div>
+          </div>
+          <div class="panel">
+            <div class="panel-header"><div class="panel-title"><i class="ti ti-clock-check"></i> SLA mensual</div><div class="panel-sub">meta 90%</div></div>
+            <div class="sla-row"><div class="sla-month">Ene</div><div class="sla-bar-wrap"><div class="sla-bar-fill" style="width:91%;background:#16a34a"></div><div class="sla-meta-line" style="left:90%"></div></div><div class="sla-pct ok">91%</div></div>
+            <div class="sla-row"><div class="sla-month">Feb</div><div class="sla-bar-wrap"><div class="sla-bar-fill" style="width:88%;background:#f59e0b"></div><div class="sla-meta-line" style="left:90%"></div></div><div class="sla-pct warn">88%</div></div>
+            <div class="sla-row"><div class="sla-month">Mar</div><div class="sla-bar-wrap"><div class="sla-bar-fill" style="width:93%;background:#16a34a"></div><div class="sla-meta-line" style="left:90%"></div></div><div class="sla-pct ok">93%</div></div>
+            <div class="sla-row"><div class="sla-month">Abr</div><div class="sla-bar-wrap"><div class="sla-bar-fill" style="width:86%;background:#f59e0b"></div><div class="sla-meta-line" style="left:90%"></div></div><div class="sla-pct warn">86%</div></div>
+            <div class="sla-row"><div class="sla-month">May</div><div class="sla-bar-wrap"><div class="sla-bar-fill" style="width:85%;background:#f59e0b"></div><div class="sla-meta-line" style="left:90%"></div></div><div class="sla-pct warn">85%</div></div>
+            <div class="sla-row"><div class="sla-month">Jun</div><div class="sla-bar-wrap"><div class="sla-bar-fill" style="width:82%;background:#e24b4a"></div><div class="sla-meta-line" style="left:90%"></div></div><div class="sla-pct danger">82%</div></div>
+            <div style="margin-top:8px;font-size:10px;color:#c0392b;display:flex;align-items:center;gap:4px"><i class="ti ti-alert-circle" style="font-size:12px"></i> Tendencia negativa 3 meses consecutivos</div>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-header"><div class="panel-title"><i class="ti ti-alarm"></i> OTs fuera de SLA</div></div>
+          <div class="sla-item"><div class="sla-id">WO-2441</div><div class="sla-info"><div class="sla-desc">Reparación A/C</div><div class="sla-client">Banco Nacional · vence hace 2 días</div></div><span class="sla-badge sla-crit">Crítica +2d</span></div>
+          <div class="sla-item"><div class="sla-id">WO-2438</div><div class="sla-info"><div class="sla-desc">Falla refrigeradora</div><div class="sla-client">Familia Herrera · vence hace 1 día</div></div><span class="sla-badge sla-crit">Crítica +1d</span></div>
+          <div class="sla-item"><div class="sla-id">WO-2435</div><div class="sla-info"><div class="sla-desc">Mantenimiento lavadora</div><div class="sla-client">Hotel Miramar · vence en 3h</div></div><span class="sla-badge sla-alert">Alerta 3h</span></div>
+          <div class="sla-item"><div class="sla-id">WO-2430</div><div class="sla-info"><div class="sla-desc">Instalación secadora</div><div class="sla-client">Residencial Torres del Sur · vence en 6h</div></div><span class="sla-badge sla-alert">Alerta 6h</span></div>
+          <div class="sla-item"><div class="sla-id">WO-2424</div><div class="sla-info"><div class="sla-desc">Reparación horno eléctrico</div><div class="sla-client">Hotel Continental · vence en 9h</div></div><span class="sla-badge sla-alert">Alerta 9h</span></div>
+        </div>
+      </div>
+
+      <!-- TAB 3: TÉCNICOS Y TALLERES -->
+      <div class="tab-content" id="tab-tecnicos">
+        <div class="kpi-strip c5">
+          <div class="kcard"><div class="kcard-label">Técnicos internos</div><div class="kcard-val">5</div><div class="kcard-sub">FCR prom: 66%</div></div>
+          <div class="kcard"><div class="kcard-label">Talleres aliados</div><div class="kcard-val">3</div><div class="kcard-sub">8 técnicos externos</div></div>
+          <div class="kcard"><div class="kcard-label">OTs en talleres ahora</div><div class="kcard-val warn">11</div><div class="kcard-sub warn">3 con SLA en riesgo</div></div>
+          <div class="kcard"><div class="kcard-label">T. respuesta prom.</div><div class="kcard-val warn">6.4h</div><div class="kcard-sub">meta: &lt; 4h</div></div>
+          <div class="kcard"><div class="kcard-label">Rating prom. talleres</div><div class="kcard-val ok">4.2</div><div class="kcard-sub">vs internos: 4.4</div></div>
+        </div>
+        <div>
+          <div class="section-header"><span class="section-title">Técnicos internos</span><span class="section-badge sb-interno">5 técnicos</span><div class="section-line"></div></div>
+          <div class="tec-table">
+            <div class="tec-th"><span>Técnico</span><span>OTs mes</span><span>FCR</span><span>Rating</span><span>T. prom.</span><span>SLA cumpl.</span><span>Score</span></div>
+            <!-- Luis Mora -->
+            <div class="tec-row">
+              <div class="tec-id"><div class="av av-lm-a" style="width:34px;height:34px;font-size:11px">LM</div><div><div class="tec-name-a">Luis Mora</div><div class="tec-zone">Zona Norte · Sector A</div></div></div>
+              <div class="v ok" style="font-size:13px">48</div>
+              <div class="fcr-cell"><div class="fcr-val ok" style="color:#16a34a">84%</div><div class="fcr-bar"><div class="fcr-fill" style="width:84%;background:#16a34a"></div></div></div>
+              <div class="v ok" style="font-size:13px">4.8</div>
+              <div class="v ok" style="font-size:13px">2.1h</div>
+              <div class="v ok" style="font-size:13px">94%</div>
+              <span class="score-pill score-a">A</span>
+            </div>
+            <!-- Carlos Ruiz -->
+            <div class="tec-row">
+              <div class="tec-id"><div class="av av-cr-a" style="width:34px;height:34px;font-size:11px">CR</div><div><div class="tec-name-a">Carlos Ruiz</div><div class="tec-zone">Zona Norte · Sector B</div></div></div>
+              <div class="v ok" style="font-size:13px">43</div>
+              <div class="fcr-cell"><div class="fcr-val ok" style="color:#16a34a">76%</div><div class="fcr-bar"><div class="fcr-fill" style="width:76%;background:#16a34a"></div></div></div>
+              <div class="v ok" style="font-size:13px">4.5</div>
+              <div class="v warn" style="font-size:13px">2.8h</div>
+              <div class="v ok" style="font-size:13px">91%</div>
+              <span class="score-pill score-a">A</span>
+            </div>
+            <!-- Diego Pérez -->
+            <div class="tec-row">
+              <div class="tec-id"><div class="av av-dp-a" style="width:34px;height:34px;font-size:11px">DP</div><div><div class="tec-name-a">Diego Pérez</div><div class="tec-zone">Zona Central · Sector C</div></div></div>
+              <div class="v neutral" style="font-size:13px">37</div>
+              <div class="fcr-cell"><div class="fcr-val warn" style="color:#c27b00">65%</div><div class="fcr-bar"><div class="fcr-fill" style="width:65%;background:#f59e0b"></div></div></div>
+              <div class="v warn" style="font-size:13px">4.1</div>
+              <div class="v warn" style="font-size:13px">3.1h</div>
+              <div class="v warn" style="font-size:13px">86%</div>
+              <span class="score-pill score-b">B</span>
+            </div>
+            <!-- María Castro -->
+            <div class="tec-row">
+              <div class="tec-id"><div class="av av-mc-a" style="width:34px;height:34px;font-size:11px">MC</div><div><div class="tec-name-a">María Castro</div><div class="tec-zone">Zona Central · Sector D</div></div></div>
+              <div class="v neutral" style="font-size:13px">31</div>
+              <div class="fcr-cell"><div class="fcr-val warn" style="color:#c27b00">58%</div><div class="fcr-bar"><div class="fcr-fill" style="width:58%;background:#f59e0b"></div></div></div>
+              <div class="v warn" style="font-size:13px">3.9</div>
+              <div class="v warn" style="font-size:13px">3.4h</div>
+              <div class="v warn" style="font-size:13px">83%</div>
+              <span class="score-pill score-b">B</span>
+            </div>
+            <!-- Ana López -->
+            <div class="tec-row">
+              <div class="tec-id"><div class="av av-al-a" style="width:34px;height:34px;font-size:11px">AL</div><div><div class="tec-name-a">Ana López</div><div class="tec-zone">Zona Sur · Sector E</div></div></div>
+              <div class="v neutral" style="font-size:13px">28</div>
+              <div class="fcr-cell"><div class="fcr-val danger" style="color:#c0392b">51%</div><div class="fcr-bar"><div class="fcr-fill" style="width:51%;background:#e24b4a"></div></div></div>
+              <div class="v warn" style="font-size:13px">3.7</div>
+              <div class="v danger" style="font-size:13px">4.2h</div>
+              <div class="v danger" style="font-size:13px">77%</div>
+              <span class="score-pill score-c">C</span>
+            </div>
+          </div>
+        </div>
+        <div>
+          <div class="section-header"><span class="section-title">Talleres externos aliados</span><span class="section-badge sb-externo">3 talleres · 8 técnicos</span><div class="section-line"></div><span style="font-size:10px;color:#bbb;white-space:nowrap">Clic para ver técnicos</span></div>
+          <div class="taller-section-wrap">
+            <div class="taller-col-header"><span>Taller</span><span>OTs activas</span><span>T. respuesta</span><span>Resolución</span><span>Rating cliente</span><span>SLA cumpl.</span><span></span></div>
+
+            <!-- Tecnoserv Panamá -->
+            <div class="taller-card-a" id="tc1">
+              <div class="taller-header" onclick="toggleT('tc1')">
+                <div class="taller-id-cell"><div class="taller-icon green"><i class="ti ti-building-store"></i></div><div><div class="taller-name-a">Tecnoserv Panamá</div><div class="taller-sub-txt">Zona Norte · 3 técnicos</div></div></div>
+                <div><div class="tkpi-val ok">4</div><div class="tkpi-lbl">OTs activas</div></div>
+                <div><div class="tkpi-val ok">3.2h</div><div class="tkpi-lbl">T. respuesta</div></div>
+                <div><div class="tkpi-val ok">88%</div><div class="tkpi-lbl">Resolución</div></div>
+                <div class="rating-cell"><span class="stars">★★★★★</span><span class="rating-num" style="color:#16a34a">4.6</span></div>
+                <div class="sla-bar-cell"><div class="sla-bar-label" style="color:#16a34a">96%</div><div class="sla-bar-outer"><div class="sla-bar-inner" style="width:96%;background:#16a34a"></div></div></div>
+                <i class="ti ti-chevron-down chevron" id="chev-tc1"></i>
+              </div>
+              <div class="sub-tecs" id="tecs-tc1">
+                <div class="sub-th"><span>Técnico</span><span>OTs mes</span><span>FCR</span><span>Rating</span><span>T. prom.</span><span>Score</span></div>
+                <div class="sub-row"><div class="sub-id"><div class="sub-av" style="background:#6366f1">RV</div><span class="sub-name">Roberto Vargas</span></div><div class="v neutral">12</div><div class="v ok">91%</div><div class="v ok">4.8</div><div class="v ok">2.8h</div><span class="score-pill score-a">A</span></div>
+                <div class="sub-row"><div class="sub-id"><div class="sub-av" style="background:#06b6d4">JP</div><span class="sub-name">Jorge Pacheco</span></div><div class="v neutral">9</div><div class="v ok">85%</div><div class="v ok">4.5</div><div class="v ok">3.1h</div><span class="score-pill score-a">A</span></div>
+                <div class="sub-row"><div class="sub-id"><div class="sub-av" style="background:#8b5cf6">FM</div><span class="sub-name">Felipe Montoya</span></div><div class="v neutral">7</div><div class="v warn">72%</div><div class="v warn">4.2</div><div class="v warn">3.9h</div><span class="score-pill score-b">B</span></div>
+              </div>
+            </div>
+
+            <!-- Frío Total S.A. -->
+            <div class="taller-card-a" id="tc2">
+              <div class="taller-header" onclick="toggleT('tc2')">
+                <div class="taller-id-cell"><div class="taller-icon blue"><i class="ti ti-building-store"></i></div><div><div class="taller-name-a">Frío Total S.A.</div><div class="taller-sub-txt">Zona Central · 3 técnicos</div></div></div>
+                <div><div class="tkpi-val warn">5</div><div class="tkpi-lbl">OTs activas</div></div>
+                <div><div class="tkpi-val warn">5.8h</div><div class="tkpi-lbl">T. respuesta</div></div>
+                <div><div class="tkpi-val warn">74%</div><div class="tkpi-lbl">Resolución</div></div>
+                <div class="rating-cell"><span class="stars">★★★★☆</span><span class="rating-num" style="color:#c27b00">4.0</span></div>
+                <div class="sla-bar-cell"><div class="sla-bar-label" style="color:#c27b00">84%</div><div class="sla-bar-outer"><div class="sla-bar-inner" style="width:84%;background:#f59e0b"></div></div></div>
+                <i class="ti ti-chevron-down chevron" id="chev-tc2"></i>
+              </div>
+              <div class="sub-tecs" id="tecs-tc2">
+                <div class="sub-th"><span>Técnico</span><span>OTs mes</span><span>FCR</span><span>Rating</span><span>T. prom.</span><span>Score</span></div>
+                <div class="sub-row"><div class="sub-id"><div class="sub-av" style="background:#ec4899">MA</div><span class="sub-name">Miguel Arias</span></div><div class="v neutral">10</div><div class="v warn">77%</div><div class="v warn">4.1</div><div class="v warn">3.5h</div><span class="score-pill score-b">B</span></div>
+                <div class="sub-row"><div class="sub-id"><div class="sub-av" style="background:#14b8a6">SQ</div><span class="sub-name">Santiago Quiroz</span></div><div class="v neutral">8</div><div class="v warn">70%</div><div class="v warn">3.9</div><div class="v warn">4.1h</div><span class="score-pill score-b">B</span></div>
+                <div class="sub-row"><div class="sub-id"><div class="sub-av" style="background:#f43f5e">ER</div><span class="sub-name">Ernesto Reyes</span></div><div class="v neutral">6</div><div class="v danger">59%</div><div class="v danger">3.5</div><div class="v danger">5.2h</div><span class="score-pill score-c">C</span></div>
+              </div>
+            </div>
+
+            <!-- ElectroFix Panamá -->
+            <div class="taller-card-a alert-border" id="tc3">
+              <div class="taller-header" onclick="toggleT('tc3')" style="background:#fffafa;">
+                <div class="taller-id-cell"><div class="taller-icon warn"><i class="ti ti-building-store"></i></div><div><div class="taller-name-a" style="display:flex;align-items:center;gap:6px">ElectroFix Panamá <span style="font-size:9px;font-weight:700;padding:2px 7px;border-radius:8px;background:#fff0f0;color:#c0392b">⚠ En revisión</span></div><div class="taller-sub-txt">Zona Sur · 2 técnicos</div></div></div>
+                <div><div class="tkpi-val danger">2</div><div class="tkpi-lbl">OTs activas</div></div>
+                <div><div class="tkpi-val danger">9.1h</div><div class="tkpi-lbl">T. respuesta</div></div>
+                <div><div class="tkpi-val danger">51%</div><div class="tkpi-lbl">Resolución</div></div>
+                <div class="rating-cell"><span class="stars" style="color:#f59e0b">★★★☆☆</span><span class="rating-num" style="color:#c0392b">3.2</span></div>
+                <div class="sla-bar-cell"><div class="sla-bar-label" style="color:#c0392b">61%</div><div class="sla-bar-outer"><div class="sla-bar-inner" style="width:61%;background:#e24b4a"></div></div></div>
+                <i class="ti ti-chevron-down chevron" id="chev-tc3"></i>
+              </div>
+              <div class="sub-tecs" id="tecs-tc3">
+                <div class="sub-th"><span>Técnico</span><span>OTs mes</span><span>FCR</span><span>Rating</span><span>T. prom.</span><span>Score</span></div>
+                <div class="sub-row"><div class="sub-id"><div class="sub-av" style="background:#dc2626">NB</div><span class="sub-name">Nelson Barrios</span></div><div class="v neutral">5</div><div class="v danger">48%</div><div class="v danger">3.1</div><div class="v danger">6.8h</div><span class="score-pill score-c">C</span></div>
+                <div class="sub-row"><div class="sub-id"><div class="sub-av" style="background:#b91c1c">HL</div><span class="sub-name">Héctor Lara</span></div><div class="v neutral">3</div><div class="v danger">55%</div><div class="v danger">3.4</div><div class="v danger">7.3h</div><span class="score-pill score-c">C</span></div>
+              </div>
+              <div style="background:#fff8f8;border-top:0.5px solid #f5a0a0;padding:10px 20px;font-size:10px;color:#c0392b;display:flex;align-items:center;gap:7px"><i class="ti ti-alert-triangle"></i> SLA por debajo del umbral mínimo (70%). Se recomienda suspender nuevas asignaciones hasta revisión.</div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 4: REINCIDENCIA -->
+      <div class="tab-content" id="tab-reincidencia">
+        <div class="kpi-strip c4">
+          <div class="kcard"><div class="kcard-label">Equipos reincidentes</div><div class="kcard-val danger">12</div><div class="kcard-sub danger">en últimos 90 días</div></div>
+          <div class="kcard"><div class="kcard-label">Tasa de reincidencia</div><div class="kcard-val warn">5.2%</div><div class="kcard-sub">meta: &lt; 3%</div></div>
+          <div class="kcard"><div class="kcard-label">Categoría más reincidente</div><div class="kcard-val" style="font-size:14px;padding-top:3px">Lavadoras</div><div class="kcard-sub">4 equipos reincidentes</div></div>
+          <div class="kcard"><div class="kcard-label">Falla más frecuente</div><div class="kcard-val" style="font-size:13px;padding-top:3px">Centrifugado</div><div class="kcard-sub">3 casos registrados</div></div>
+        </div>
+        <div class="risk-banner"><i class="ti ti-alert-triangle"></i><div><strong style="font-weight:700;display:block;margin-bottom:2px">Atención</strong>4 equipos han regresado 3 o más veces por la misma falla en menos de 90 días. Puede indicar reparaciones incompletas o repuestos de baja calidad. Se recomienda revisión del protocolo de cierre de OT.</div></div>
+        <div class="row2">
+          <div class="panel">
+            <div class="panel-header"><div class="panel-title"><i class="ti ti-refresh-alert"></i> Equipos reincidentes — top 6</div><div class="panel-sub">&lt; 90 días</div></div>
+            <div class="reinc-item"><div class="reinc-num">1</div><div class="reinc-eq-icon" style="background:#f0e9fd"><i class="ti ti-wash" style="color:#833AE0"></i></div><div class="reinc-info"><div class="reinc-model">Lavadora · N/S: WM-2023-001</div><div class="reinc-falla">Falla centrifugado</div><div class="reinc-client">Familia Gómez</div></div><div style="text-align:right"><div class="reinc-count danger">3×</div><div class="reinc-dias">62 días desde 1ª OT</div></div></div>
+            <div class="reinc-item"><div class="reinc-num">2</div><div class="reinc-eq-icon" style="background:#e8f0fe"><i class="ti ti-air-conditioning" style="color:#2563eb"></i></div><div class="reinc-info"><div class="reinc-model">Aire acondicionado · N/S: AC-4872-X</div><div class="reinc-falla">No enfría correctamente</div><div class="reinc-client">Torre Central Offices</div></div><div style="text-align:right"><div class="reinc-count danger">3×</div><div class="reinc-dias">34 días desde 1ª OT</div></div></div>
+            <div class="reinc-item"><div class="reinc-num">3</div><div class="reinc-eq-icon" style="background:#fff4e0"><i class="ti ti-microwave" style="color:#c27b00"></i></div><div class="reinc-info"><div class="reinc-model">Horno eléctrico · N/S: HE-7610-MX</div><div class="reinc-falla">Resistencia quemada</div><div class="reinc-client">Hotel Continental</div></div><div style="text-align:right"><div class="reinc-count warn">2×</div><div class="reinc-dias">88 días desde 1ª OT</div></div></div>
+            <div class="reinc-item"><div class="reinc-num">4</div><div class="reinc-eq-icon" style="background:#e6f9f0"><i class="ti ti-fridge" style="color:#16a34a"></i></div><div class="reinc-info"><div class="reinc-model">Refrigeradora · N/S: RF-5588-FHZ</div><div class="reinc-falla">Falla de compresor</div><div class="reinc-client">Restaurante La Plaza</div></div><div style="text-align:right"><div class="reinc-count warn">2×</div><div class="reinc-dias">71 días desde 1ª OT</div></div></div>
+            <div class="reinc-item"><div class="reinc-num">5</div><div class="reinc-eq-icon" style="background:#e6f9f0"><i class="ti ti-fridge" style="color:#16a34a"></i></div><div class="reinc-info"><div class="reinc-model">Refrigeradora · N/S: RF-4721-SL</div><div class="reinc-falla">Fuga de refrigerante</div><div class="reinc-client">Familia Rodríguez</div></div><div style="text-align:right"><div class="reinc-count warn">2×</div><div class="reinc-dias">55 días desde 1ª OT</div></div></div>
+            <div class="reinc-item"><div class="reinc-num">6</div><div class="reinc-eq-icon" style="background:#e8f0fe"><i class="ti ti-air-conditioning" style="color:#2563eb"></i></div><div class="reinc-info"><div class="reinc-model">Aire acondicionado · N/S: AC-0180-CC</div><div class="reinc-falla">Tarjeta electrónica</div><div class="reinc-client">Banco Nacional</div></div><div style="text-align:right"><div class="reinc-count warn">2×</div><div class="reinc-dias">41 días desde 1ª OT</div></div></div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:12px">
+            <div class="panel">
+              <div class="panel-header"><div class="panel-title"><i class="ti ti-category"></i> Reincidencia por categoría</div></div>
+              <div class="cat-row"><div class="cat-label"><i class="ti ti-wash" style="color:#833AE0"></i>Lavadoras</div><div class="aging-bar-wrap"><div class="aging-bar-fill" style="width:100%;background:#833AE0"></div></div><div class="aging-val danger">4</div></div>
+              <div class="cat-row"><div class="cat-label"><i class="ti ti-fridge" style="color:#2563eb"></i>Refrigeradoras</div><div class="aging-bar-wrap"><div class="aging-bar-fill" style="width:75%;background:#2563eb"></div></div><div class="aging-val warn">3</div></div>
+              <div class="cat-row"><div class="cat-label"><i class="ti ti-air-conditioning" style="color:#0891b2"></i>Aires acond.</div><div class="aging-bar-wrap"><div class="aging-bar-fill" style="width:75%;background:#0891b2"></div></div><div class="aging-val warn">3</div></div>
+              <div class="cat-row"><div class="cat-label"><i class="ti ti-microwave" style="color:#c27b00"></i>Hornos eléctricos</div><div class="aging-bar-wrap"><div class="aging-bar-fill" style="width:50%;background:#c27b00"></div></div><div class="aging-val warn">2</div></div>
+              <div class="cat-row"><div class="cat-label"><i class="ti ti-dryer" style="color:#16a34a"></i>Secadoras</div><div class="aging-bar-wrap"><div class="aging-bar-fill" style="width:25%;background:#16a34a"></div></div><div class="aging-val ok">1</div></div>
+            </div>
+            <div class="panel">
+              <div class="panel-header"><div class="panel-title"><i class="ti ti-tool"></i> Fallas más repetidas</div></div>
+              <div class="aging-row"><div class="aging-label">Falla centrifugado</div><div class="aging-bar-wrap"><div class="aging-bar-fill" style="width:100%;background:#833AE0"></div></div><div class="aging-val" style="color:#833AE0">3</div></div>
+              <div class="aging-row"><div class="aging-label">No enfría / refrigeración</div><div class="aging-bar-wrap"><div class="aging-bar-fill" style="width:67%;background:#a87af0"></div></div><div class="aging-val" style="color:#833AE0">2</div></div>
+              <div class="aging-row"><div class="aging-label">Resistencia quemada</div><div class="aging-bar-wrap"><div class="aging-bar-fill" style="width:67%;background:#a87af0"></div></div><div class="aging-val" style="color:#833AE0">2</div></div>
+              <div class="aging-row"><div class="aging-label">Falla de compresor</div><div class="aging-bar-wrap"><div class="aging-bar-fill" style="width:67%;background:#c9a8f5"></div></div><div class="aging-val" style="color:#6b4fc4">2</div></div>
+              <div class="aging-row"><div class="aging-label">Tarjeta electrónica</div><div class="aging-bar-wrap"><div class="aging-bar-fill" style="width:33%;background:#e0d4f7"></div></div><div class="aging-val neutral">1</div></div>
+              <div class="aging-row"><div class="aging-label">Fuga de refrigerante</div><div class="aging-bar-wrap"><div class="aging-bar-fill" style="width:33%;background:#e0d4f7"></div></div><div class="aging-val neutral">1</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 5: NPS -->
+      <div class="tab-content" id="tab-nps">
+        <div class="kpi-strip c4">
+          <div class="kcard"><div class="kcard-label">NPS global</div><div class="kcard-val ok">+54</div><div class="kcard-sub ok">▲ +6 pts vs mes ant.</div></div>
+          <div class="kcard"><div class="kcard-label">Respuestas recibidas</div><div class="kcard-val">186</div><div class="kcard-sub">76% tasa de respuesta</div></div>
+          <div class="kcard"><div class="kcard-label">Promotores</div><div class="kcard-val ok">68%</div><div class="kcard-sub ok">127 clientes</div></div>
+          <div class="kcard"><div class="kcard-label">Detractores</div><div class="kcard-val danger">14%</div><div class="kcard-sub danger">26 clientes — acción requerida</div></div>
+        </div>
+        <div class="row2">
+          <div class="panel">
+            <div class="panel-header"><div class="panel-title"><i class="ti ti-mood-smile"></i> Distribución NPS</div></div>
+            <div style="display:flex;align-items:center;gap:16px;margin-bottom:12px"><div><div class="nps-score">+54</div><div class="nps-sub">186 respuestas · vía WhatsApp</div></div><div style="flex:1"><div class="nps-strip" style="margin-bottom:4px"><div class="nps-seg" style="width:68%;background:#16a34a;color:#fff">68%</div><div class="nps-seg" style="width:18%;background:#f0f0f0;color:#888">18%</div><div class="nps-seg" style="width:14%;background:#e24b4a;color:#fff">14%</div></div><div class="nps-labels"><span class="nps-lbl" style="color:#16a34a">Promotores</span><span class="nps-lbl">Pasivos</span><span class="nps-lbl" style="color:#c0392b">Detractores</span></div></div></div>
+            <div style="border-top:0.5px solid #f5f5f5;padding-top:10px"><div style="font-size:10px;font-weight:700;color:#aaa;text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">NPS por tipo de servicio</div>
+              <div class="aging-row"><div class="aging-label">Instalación</div><div class="aging-bar-wrap"><div class="aging-bar-fill" style="width:78%;background:#16a34a"></div></div><div class="aging-val ok">+72</div></div>
+              <div class="aging-row"><div class="aging-label">Mantenimiento</div><div class="aging-bar-wrap"><div class="aging-bar-fill" style="width:65%;background:#16a34a"></div></div><div class="aging-val ok">+61</div></div>
+              <div class="aging-row"><div class="aging-label">Reparación</div><div class="aging-bar-wrap"><div class="aging-bar-fill" style="width:55%;background:#f59e0b"></div></div><div class="aging-val warn">+48</div></div>
+              <div class="aging-row"><div class="aging-label">Garantía</div><div class="aging-bar-wrap"><div class="aging-bar-fill" style="width:30%;background:#e24b4a"></div></div><div class="aging-val danger">+22</div></div>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="panel-header"><div class="panel-title"><i class="ti ti-star"></i> Rating por técnico</div></div>
+            <div class="nps-tec-row"><div class="av av-lm-a" style="width:24px;height:24px;font-size:8px">LM</div><div style="flex:1;font-size:11px;font-weight:500;color:#1a1a2e">Luis Mora</div><span style="color:#f59e0b;font-size:11px;margin-right:6px">★★★★★</span><div class="v ok">4.8</div></div>
+            <div class="nps-tec-row"><div class="av av-cr-a" style="width:24px;height:24px;font-size:8px">CR</div><div style="flex:1;font-size:11px;font-weight:500;color:#1a1a2e">Carlos Ruiz</div><span style="color:#f59e0b;font-size:11px;margin-right:6px">★★★★½</span><div class="v ok">4.5</div></div>
+            <div class="nps-tec-row"><div class="av av-dp-a" style="width:24px;height:24px;font-size:8px">DP</div><div style="flex:1;font-size:11px;font-weight:500;color:#1a1a2e">Diego Pérez</div><span style="color:#f59e0b;font-size:11px;margin-right:6px">★★★★☆</span><div class="v warn">4.1</div></div>
+            <div class="nps-tec-row"><div class="av av-mc-a" style="width:24px;height:24px;font-size:8px">MC</div><div style="flex:1;font-size:11px;font-weight:500;color:#1a1a2e">María Castro</div><span style="color:#f59e0b;font-size:11px;margin-right:6px">★★★½☆</span><div class="v warn">3.9</div></div>
+            <div class="nps-tec-row"><div class="av av-al-a" style="width:24px;height:24px;font-size:8px">AL</div><div style="flex:1;font-size:11px;font-weight:500;color:#1a1a2e">Ana López</div><span style="color:#f59e0b;font-size:11px;margin-right:6px">★★★½☆</span><div class="v warn">3.7</div></div>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-header"><div class="panel-title"><i class="ti ti-message-circle"></i> Comentarios recientes</div><div class="panel-sub">Últimas 5 respuestas</div></div>
+          <div class="comment-item"><div class="comment-header"><span style="color:#f59e0b;font-size:11px">★★★★★</span><div class="comment-name">Familia Gómez</div><div class="comment-date">hace 2 días</div></div><div class="comment-text">Muy buen servicio, el técnico llegó puntual y explicó todo claramente.</div><span class="comment-tag tag-pos">Puntualidad</span> <span class="comment-tag tag-pos">Comunicación</span></div>
+          <div class="comment-item"><div class="comment-header"><span style="color:#f59e0b;font-size:11px">★★★☆☆</span><div class="comment-name">Torre Central Offices</div><div class="comment-date">hace 3 días</div></div><div class="comment-text">El técnico resolvió el problema pero tardó más de lo esperado en llegar.</div><span class="comment-tag tag-neg">Tiempo de espera</span></div>
+          <div class="comment-item"><div class="comment-header"><span style="color:#f59e0b;font-size:11px">★★★★★</span><div class="comment-name">Restaurante La Plaza</div><div class="comment-date">hace 4 días</div></div><div class="comment-text">Instalación perfecta, sin inconvenientes. El técnico dejó todo limpio.</div><span class="comment-tag tag-pos">Limpieza</span> <span class="comment-tag tag-pos">Profesionalismo</span></div>
+          <div class="comment-item"><div class="comment-header"><span style="color:#f59e0b;font-size:11px">★★☆☆☆</span><div class="comment-name">Hotel Continental</div><div class="comment-date">hace 5 días</div></div><div class="comment-text">La OT lleva semanas sin resolverse. El equipo sigue dañado.</div><span class="comment-tag tag-neg">Sin resolución</span> <span class="comment-tag tag-neg">Tiempo excesivo</span></div>
+          <div class="comment-item"><div class="comment-header"><span style="color:#f59e0b;font-size:11px">★★★★☆</span><div class="comment-name">Banco Nacional</div><div class="comment-date">hace 6 días</div></div><div class="comment-text">Buen trabajo técnico, aunque la comunicación sobre el repuesto fue confusa.</div><span class="comment-tag tag-pos">Calidad técnica</span> <span class="comment-tag tag-neg">Comunicación</span></div>
+        </div>
+      </div>
+
+    </div><!-- /screen-analytics -->
+
+  </div><!-- /main -->
+</div><!-- /app -->
+
+<!-- Overlay sidebar mobile -->
+<div class="sidebar-overlay" id="sidebar-overlay" onclick="closeSidebar()"></div>
+
+<script>
+  /* ── ASISTENTE IA ── */
+  const iaResponses = {
+    troubleshooting: {
+      user: 'Necesito ayuda con troubleshooting técnico',
+      bot: '¡Claro! Para el diagnóstico técnico, dime: <br><br>• ¿Qué tipo de equipo presenta la falla? <br>• ¿Cuáles son los síntomas exactos? <br>• ¿El equipo enciende pero no funciona correctamente, o no enciende en absoluto?<br><br>Con esa información te guío paso a paso.',
+      chips: ['Lavadora','Refrigeradora','A/C','Secadora','Horno']
+    },
+    base: {
+      user: 'Quiero acceder a la base de conocimientos',
+      bot: 'Tengo acceso a manuales técnicos de las principales marcas. ¿Sobre qué equipo necesitas documentación?<br><br>También puedo buscar por código de error si ya lo tienes identificado.',
+      chips: ['Manual lavadoras','Manual A/C','Códigos de error','Diagramas eléctricos']
+    },
+    procedimientos: {
+      user: 'Necesito ver procedimientos de servicio',
+      bot: 'Te comparto los procedimientos disponibles. ¿Qué tipo de servicio vas a realizar?<br><br>Tengo protocolos para: instalación, mantenimiento preventivo, reparación correctiva y revisión de garantía.',
+      chips: ['Instalación A/C','Mantenimiento lavadora','Revisión garantía','Reparación compresor']
+    },
+    practicas: {
+      user: 'Quiero ver mejores prácticas técnicas',
+      bot: '🔹 <strong>Lavadoras:</strong> Revisar siempre rodamientos y correa antes de encender el equipo en diagnóstico.<br>🔹 <strong>A/C:</strong> Medir presión del refrigerante antes de cualquier intervención.<br>🔹 <strong>Documentación:</strong> Fotografiar placa de datos del equipo como primer paso.<br><br>¿Quieres profundizar en algún tema?',
+      chips: ['Seguridad eléctrica','Manejo de refrigerantes','Documentación de OT']
+    }
+  };
+
+  const iaGeneric = [
+    'Entendido. Déjame buscar en la base de conocimientos...<br><br>Encontré <strong>3 resultados relevantes</strong>. ¿Quieres el procedimiento paso a paso o el manual completo?',
+    'Para ese caso, el procedimiento recomendado es: primero verificar alimentación eléctrica, luego sistema de control y finalmente componentes mecánicos. ¿Necesitas el checklist completo?',
+    'Según nuestra base técnica, este tipo de falla tiene una tasa de resolución del <strong>87% en primera visita</strong> con el protocolo estándar. Te lo comparto ahora.',
+    'Revisé OTs similares del último mes. Coincide con <strong>WO-2441</strong> y <strong>WO-2389</strong>, ambas resueltas por reemplazo de rodamiento posterior. ¿Quieres ver el detalle?'
+  ];
+  let iaGenIdx = 0;
+
+  function addMsg(text, type) {
+    const container = document.getElementById('ia-messages');
+    const isBot = type === 'bot';
+    const now = new Date();
+    const time = now.getHours() + ':' + String(now.getMinutes()).padStart(2,'0');
+    const div = document.createElement('div');
+    div.className = 'ia-msg' + (isBot ? '' : ' user');
+    div.innerHTML = `<div class="ia-msg-av ${type}">${isBot ? '<i class="ti ti-sparkles"></i>' : '<span>SP</span>'}</div><div><div class="ia-bubble ${type}">${text}</div><div class="ia-msg-time">${time}</div></div>`;
+    container.appendChild(div);
+    container.scrollTop = container.scrollHeight;
+  }
+
+  function addTyping() {
+    const container = document.getElementById('ia-messages');
+    const div = document.createElement('div');
+    div.className = 'ia-msg'; div.id = 'ia-typing';
+    div.innerHTML = `<div class="ia-msg-av bot"><i class="ti ti-sparkles"></i></div><div class="ia-bubble bot"><div class="ia-typing"><span></span><span></span><span></span></div></div>`;
+    container.appendChild(div);
+    container.scrollTop = container.scrollHeight;
+  }
+
+  function removeTyping() { const t = document.getElementById('ia-typing'); if(t) t.remove(); }
+
+  function addChips(chips) {
+    const container = document.getElementById('ia-messages');
+    const div = document.createElement('div');
+    div.style.cssText = 'padding:0 0 4px 38px;display:flex;flex-wrap:wrap;gap:4px;';
+    chips.forEach(c => {
+      const chip = document.createElement('span');
+      chip.className = 'ia-chip'; chip.textContent = c;
+      chip.onclick = () => {
+        div.remove(); addMsg(c, 'user');
+        setTimeout(() => { addTyping(); setTimeout(() => { removeTyping(); addMsg(iaGeneric[iaGenIdx++ % iaGeneric.length], 'bot'); }, 1200); }, 200);
+      };
+      div.appendChild(chip);
+    });
+    container.appendChild(div);
+    container.scrollTop = container.scrollHeight;
+  }
+
+  function sendSuggestion(key) {
+    const r = iaResponses[key]; if (!r) return;
+    addMsg(r.user, 'user');
+    setTimeout(() => { addTyping(); setTimeout(() => { removeTyping(); addMsg(r.bot, 'bot'); if(r.chips) addChips(r.chips); }, 1200); }, 300);
+  }
+
+  function sendIA() {
+    const input = document.getElementById('ia-input');
+    const text = input.value.trim(); if (!text) return;
+    input.value = ''; addMsg(text, 'user');
+    setTimeout(() => { addTyping(); setTimeout(() => { removeTyping(); addMsg(iaGeneric[iaGenIdx++ % iaGeneric.length], 'bot'); }, 1400); }, 300);
+  }
+
+  /* ── AGENDA ── */
+  const semanas = [
+    '9 – 15 jun 2025',
+    '16 – 22 jun 2025',
+    '23 – 29 jun 2025',
+    '30 jun – 6 jul 2025'
+  ];
+  let semanaIdx = 1;
+
+  function agendaNav(dir) {
+    semanaIdx = Math.max(0, Math.min(semanas.length - 1, semanaIdx + dir));
+    document.getElementById('agenda-week-label').textContent = semanas[semanaIdx];
+  }
+
+  function filterAgenda(initials, el) {
+    document.querySelectorAll('.agenda-resource').forEach(r => r.classList.remove('selected'));
+    el.classList.add('selected');
+    // Highlight OTs del técnico seleccionado
+    document.querySelectorAll('.agenda-ot').forEach(ot => {
+      const av = ot.querySelector('.aot-av');
+      if (!initials || (av && av.textContent.trim() === initials)) {
+        ot.style.opacity = '1';
+        ot.style.outline = 'none';
+      } else {
+        ot.style.opacity = '0.25';
+      }
+    });
+  }
+
+  /* Reset filtro al hacer doble click en recurso */
+  document.querySelectorAll('.agenda-resource').forEach(r => {
+    r.addEventListener('dblclick', () => {
+      document.querySelectorAll('.agenda-ot').forEach(ot => ot.style.opacity = '1');
+      document.querySelectorAll('.agenda-resource').forEach(res => res.classList.remove('selected'));
+    });
+  });
+  /* ── SIDEBAR MÓVIL ── */
+  function openSidebar() {
+    document.querySelector('.sidebar').classList.add('open');
+    document.getElementById('sidebar-overlay').classList.add('open');
+  }
+  function closeSidebar() {
+    document.querySelector('.sidebar').classList.remove('open');
+    document.getElementById('sidebar-overlay').classList.remove('open');
+  }
+
+  function goTo(id, navEl) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('.topbar').forEach(t => t.style.display = 'none');
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    document.getElementById('screen-' + id).classList.add('active');
+    document.getElementById('tb-' + id).style.display = 'flex';
+    document.getElementById('stabs-analytics').style.display = id === 'analytics' ? 'flex' : 'none';
+    navEl.classList.add('active');
+    closeSidebar();
+  }
+
+  function showTab(id, el) {
+    document.querySelectorAll('#screen-analytics .tab-content').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.stab').forEach(t => t.classList.remove('active'));
+    document.getElementById('tab-' + id).classList.add('active');
+    el.classList.add('active');
+    document.getElementById('screen-analytics').scrollTop = 0;
+  }
+
+  function setFilter(filter) {
+    document.querySelectorAll('.fcard').forEach(c => c.classList.remove('selected'));
+    const key = filter === 'all' ? 'todas' : filter;
+    const el = document.querySelector('[data-f="' + key + '"]');
+    if (el) el.classList.add('selected');
+    const rows = document.querySelectorAll('.ot-row');
+    let visible = 0;
+    rows.forEach(row => {
+      const match = filter === 'todas' || filter === 'all' || row.dataset.e === filter;
+      row.classList.toggle('hidden', !match);
+      if (match) visible++;
+    });
+    const map = { all:'24 órdenes', todas:'6 órdenes', progreso:'1 orden en progreso', pendiente:'2 órdenes pendientes', completada:'2 órdenes completadas', bloqueada:'1 orden bloqueada' };
+    document.getElementById('ord-count').textContent = map[filter] || visible + ' órdenes';
+  }
+
+  function toggleT(id) {
+    document.getElementById('tecs-' + id).classList.toggle('open');
+    document.getElementById('chev-' + id).classList.toggle('open');
+  }
+
+  /* ── PANEL DETALLE OT ── */
+  function openOT() {
+    const overlay = document.getElementById('ot-overlay');
+    overlay.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+    setRol('supervisor'); // default
+  }
+
+  function closeOT() {
+    document.getElementById('ot-overlay').style.display = 'none';
+    document.body.style.overflow = '';
+  }
+
+  // Cerrar al click en el fondo
+  document.getElementById('ot-overlay').addEventListener('click', function(e) {
+    if (e.target === this) closeOT();
+  });
+
+  // Abrir al click en cualquier fila de OT
+  document.querySelectorAll('.ot-row').forEach(row => {
+    row.addEventListener('click', openOT);
+  });
+
+  /* ── ROL TOGGLE ── */
+  let rolActual = 'supervisor';
+
+  function setRol(rol) {
+    rolActual = rol;
+    const btnSup = document.getElementById('btn-rol-sup');
+    const btnTal = document.getElementById('btn-rol-tal');
+    const secTalleres = document.getElementById('sec-talleres');
+    const footerSup = document.getElementById('footer-supervisor');
+    const footerTal = document.getElementById('footer-taller');
+    const descReadonly = document.getElementById('desc-readonly');
+    const descEdit = document.getElementById('desc-edit');
+    const obsReadonly = document.getElementById('obs-readonly');
+    const obsEdit = document.getElementById('obs-edit');
+
+    if (rol === 'supervisor') {
+      btnSup.style.background = '#833AE0'; btnSup.style.color = '#fff';
+      btnTal.style.background = 'transparent'; btnTal.style.color = '#888';
+      secTalleres.style.display = 'block';
+      footerSup.style.display = 'flex'; footerTal.style.display = 'none';
+      // solo lectura
+      descReadonly.style.display = 'block'; descEdit.style.display = 'none';
+      obsReadonly.style.display = 'block'; obsEdit.style.display = 'none';
+    } else {
+      btnTal.style.background = '#833AE0'; btnTal.style.color = '#fff';
+      btnSup.style.background = 'transparent'; btnSup.style.color = '#888';
+      secTalleres.style.display = 'none';
+      footerTal.style.display = 'flex'; footerSup.style.display = 'none';
+      // editable
+      descReadonly.style.display = 'none'; descEdit.style.display = 'block';
+      obsReadonly.style.display = 'none'; obsEdit.style.display = 'block';
+    }
+  }
+
+  /* ── CHECKLIST ── */
+  function toggleChk(item) {
+    if (rolActual === 'supervisor') return; // supervisor no edita checklist
+    item.classList.toggle('chk-done');
+    const total = document.querySelectorAll('.chk-item').length;
+    const done = document.querySelectorAll('.chk-item.chk-done').length;
+    const pct = Math.round((done / total) * 100);
+    document.getElementById('chk-progress').textContent = done + '/' + total + ' · ' + pct + '%';
+    document.getElementById('chk-bar').style.width = pct + '%';
+    document.getElementById('cierre-chk').textContent = done + '/' + total + ' completados';
+  }
+
+  /* ── ASIGNAR TALLER ── */
+  function asignarTaller(btn, nombre) {
+    btn.textContent = '✓ Asignado';
+    btn.style.background = '#e6f9f0';
+    btn.style.color = '#16a34a';
+    btn.style.border = '1.5px solid #16a34a';
+    btn.disabled = true;
+    // pequeño toast
+    showToast('Taller ' + nombre + ' asignado correctamente');
+  }
+
+  /* ── MODALES ── */
+  function showModalBloqueo() {
+    document.getElementById('modal-bloqueo').style.display = 'flex';
+  }
+  function closeModalBloqueo() {
+    document.getElementById('modal-bloqueo').style.display = 'none';
+    document.querySelectorAll('input[name="bloqueo"]').forEach(r => r.checked = false);
+    document.getElementById('bloqueo-nota').value = '';
+  }
+  function confirmarBloqueo() {
+    const sel = document.querySelector('input[name="bloqueo"]:checked');
+    if (!sel) { alert('Selecciona un motivo de bloqueo.'); return; }
+    const motivos = { repuesto:'Esp. repuesto', cliente:'Cliente no disponible', visita:'2ª visita requerida', aprobacion:'Esp. aprobación', garantia:'Derivada a garantía', otro:'Bloqueada' };
+    closeModalBloqueo();
+    closeOT();
+    showToast('OT bloqueada: ' + (motivos[sel.value] || 'Bloqueada'));
+  }
+
+  function showModalCierre() {
+    document.getElementById('modal-cierre').style.display = 'flex';
+  }
+  function closeModalCierre() {
+    document.getElementById('modal-cierre').style.display = 'none';
+  }
+  function confirmarCierre() {
+    closeModalCierre();
+    closeOT();
+    showToast('✓ OT WO-2451 cerrada correctamente');
+  }
+
+  /* ── TOAST ── */
+  function showToast(msg) {
+    let t = document.getElementById('toast-global');
+    if (!t) {
+      t = document.createElement('div');
+      t.id = 'toast-global';
+      t.style.cssText = 'position:fixed;bottom:28px;left:50%;transform:translateX(-50%);background:#1a1a2e;color:#fff;font-size:12px;font-weight:600;padding:10px 20px;border-radius:10px;z-index:500;box-shadow:0 4px 20px rgba(0,0,0,0.2);transition:opacity 0.3s;white-space:nowrap;';
+      document.body.appendChild(t);
+    }
+    t.textContent = msg;
+    t.style.opacity = '1';
+    setTimeout(() => { t.style.opacity = '0'; }, 2800);
+  }
+
+  /* ── INIT ── */
+  document.getElementById('tb-ord').style.display = 'none';
+  document.getElementById('tb-analytics').style.display = 'none';
+  setFilter('todas');
+</script>
+</body>
+</html>
